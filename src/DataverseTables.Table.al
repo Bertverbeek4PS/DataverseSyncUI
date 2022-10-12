@@ -12,7 +12,7 @@ table 70100 "Dataverse Table"
         field(2; "BC Table"; integer)
         {
             DataClassification = ToBeClassified;
-            TableRelation = AllObjWithCaption."Object ID" where("Object Type" = CONST(Table));
+            TableRelation = AllObjWithCaption."Object ID" where("Object Type" = CONST(Table), "Object Subtype" = CONST('Normal'));
             Caption = 'BC Table';
         }
         field(3; "BC Table Caption"; Text[100])
@@ -24,7 +24,7 @@ table 70100 "Dataverse Table"
         field(4; "Dataverse Table"; integer)
         {
             DataClassification = ToBeClassified;
-            TableRelation = AllObjWithCaption."Object ID" where("Object Type" = CONST(Table));
+            TableRelation = AllObjWithCaption."Object ID" where("Object Type" = CONST(Table), "Object Subtype" = CONST('CRM'));
             Caption = 'Dataverse Table';
         }
         field(5; "Dataverse Table Caption"; Text[100])

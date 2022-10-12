@@ -37,7 +37,7 @@ page 70101 "Dataverse Fields"
                     begin
                         Field.SetRange(TableNo, rec."BC Table");
                         if FieldSelection.Open(Field) then begin
-                            rec."BC Field" := Field."No.";
+                            rec.Validate("BC Field", Field."No.");
                         end;
                     end;
                 }
@@ -67,7 +67,7 @@ page 70101 "Dataverse Fields"
                     begin
                         Field.SetRange(TableNo, rec."Dataverse Table");
                         if FieldSelection.Open(Field) then begin
-                            rec."Dataverse Field" := Field."No.";
+                            rec.Validate("Dataverse Field", Field."No.");
                         end;
                     end;
                 }

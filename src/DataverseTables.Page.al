@@ -82,6 +82,7 @@ page 70100 "Dataverse Tables"
                 ApplicationArea = All;
                 Caption = 'Fields';
                 RunObject = Page "Dataverse Fields";
+                Image = SelectField;
                 RunPageLink = "Mapping Name" = field("Mapping Name"), "BC Table" = field("BC Table"), "Dataverse Table" = field("Dataverse Table");
             }
         }

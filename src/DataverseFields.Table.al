@@ -25,8 +25,16 @@ table 70101 "Dataverse Field"
         field(4; "BC Field"; Integer)
         {
             DataClassification = ToBeClassified;
-            TableRelation = Field where(TableNo = field("BC Table"));
+            TableRelation = Field."No." where(TableNo = field("BC Table"));
             Caption = 'BC Field';
+
+            trigger OnValidate()
+            var
+                Fld: Record Field;
+            begin
+                Fld.Get(Rec."BC Table", Rec."BC Field");
+                CheckFieldTypeForSync(Fld);
+            end;
         }
         field(5; "BC Field Caption"; Text[100])
         {
@@ -50,8 +58,19 @@ table 70101 "Dataverse Field"
         field(8; "Dataverse Field"; Integer)
         {
             DataClassification = ToBeClassified;
-            TableRelation = Field where(TableNo = field("Dataverse Table"));
+            TableRelation = Field."No." where(TableNo = field("Dataverse Table"));
             Caption = 'Dataverse Field';
+
+            trigger OnValidate()
+            var
+                FldBC: Record Field;
+                FldDataverse: Record Field;
+            begin
+                FldBC.Get(Rec."BC Table", Rec."BC Field");
+                FldDataverse.Get(Rec."Dataverse Table", Rec."Dataverse Field");
+
+                CompareFieldType(FldBC, FldDataverse);
+            end;
         }
         field(9; "Dataverse Field Caption"; Text[100])
         {
@@ -96,5 +115,42 @@ table 70101 "Dataverse Field"
             Clustered = true;
         }
     }
+
+    var
+        FieldTypeNotSupportedErr: Label 'The field %1 of type %2 is not supported.', Comment = '%1 = field name, %2 = field type';
+        FieldTypeNotTheSameErr: label 'The field %1 with type %2 must be the same as type %3';
+        FieldClassNormalErr: label 'Only fields with class normal can be added.';
+
+    procedure CompareFieldType(FldBC: Record Field; FldDataverse: Record Field)
+    begin
+        if (FldBC.Type = FldBC.Type::Code) and (FldDataverse.Type = FldDataverse.Type::Text) then
+            exit;
+        if FldBC.Type <> FldDataverse.Type then
+            Error(FieldTypeNotTheSameErr, FldDataverse."Field Caption", FldDataverse.Type, FldBC.Type);
+    end;
+
+    procedure CheckFieldTypeForSync(Fld: Record Field)
+    begin
+        if Fld.Class <> Fld.Class::Normal then
+            Error(FieldClassNormalErr);
+
+        case Fld.Type of
+            Fld.Type::BigInteger,
+            Fld.Type::Boolean,
+            Fld.Type::Code,
+            Fld.Type::Date,
+            Fld.Type::DateFormula,
+            Fld.Type::DateTime,
+            Fld.Type::Decimal,
+            Fld.Type::Duration,
+            Fld.Type::Guid,
+            Fld.Type::Integer,
+            Fld.Type::Option,
+            Fld.Type::Text,
+            Fld.Type::Time:
+                exit;
+        end;
+        Error(FieldTypeNotSupportedErr, Fld."Field Caption", Fld.Type);
+    end;
 
 }
