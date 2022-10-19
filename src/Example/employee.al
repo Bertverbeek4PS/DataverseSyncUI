@@ -29,7 +29,7 @@
             ExternalAccess = Read;
             Description = 'De unieke id van de gebruiker die de record heeft gemaakt.';
             Caption = 'Created By';
-            TableRelation = "CDS SystemUser".SystemUserId;
+            TableRelation = "CRM Systemuser".SystemUserId;
         }
         field(4; ModifiedOn; Datetime)
         {
@@ -46,7 +46,7 @@
             ExternalAccess = Read;
             Description = 'De unieke id van de gebruiker die de record heeft gewijzigd.';
             Caption = 'Modified By';
-            TableRelation = "CDS SystemUser".SystemUserId;
+            TableRelation = "CRM Systemuser".SystemUserId;
         }
         field(6; CreatedOnBehalfBy; GUID)
         {
@@ -55,7 +55,7 @@
             ExternalAccess = Read;
             Description = 'De unieke id van de gemachtigde gebruiker die de record heeft gemaakt.';
             Caption = 'Created By (Delegate)';
-            TableRelation = "CDS SystemUser".SystemUserId;
+            TableRelation = "CRM Systemuser".SystemUserId;
         }
         field(7; ModifiedOnBehalfBy; GUID)
         {
@@ -64,39 +64,23 @@
             ExternalAccess = Read;
             Description = 'De unieke id van de gemachtigde gebruiker die de record heeft gewijzigd.';
             Caption = 'Modified By (Delegate)';
-            TableRelation = "CDS SystemUser".SystemUserId;
+            TableRelation = "CRM Systemuser".SystemUserId;
         }
-        field(8; CreatedByName; Text[100])
+        field(16; OwnerId; GUID)
         {
-            FieldClass = FlowField;
-            CalcFormula = lookup("CDS SystemUser".FullName where(SystemUserId = field(CreatedBy)));
-            ExternalName = 'createdbyname';
-            ExternalType = 'String';
-            ExternalAccess = Read;
+            ExternalName = 'ownerid';
+            ExternalType = 'Owner';
+            Description = 'Eigenaar-id';
+            Caption = 'Owner';
         }
-        field(10; CreatedOnBehalfByName; Text[100])
+        field(21; OwningBusinessUnit; GUID)
         {
-            FieldClass = FlowField;
-            CalcFormula = lookup("CDS SystemUser".FullName where(SystemUserId = field(CreatedOnBehalfBy)));
-            ExternalName = 'createdonbehalfbyname';
-            ExternalType = 'String';
+            ExternalName = 'owningbusinessunit';
+            ExternalType = 'Lookup';
             ExternalAccess = Read;
-        }
-        field(12; ModifiedByName; Text[100])
-        {
-            FieldClass = FlowField;
-            CalcFormula = lookup("CDS SystemUser".FullName where(SystemUserId = field(ModifiedBy)));
-            ExternalName = 'modifiedbyname';
-            ExternalType = 'String';
-            ExternalAccess = Read;
-        }
-        field(14; ModifiedOnBehalfByName; Text[100])
-        {
-            FieldClass = FlowField;
-            CalcFormula = lookup("CDS SystemUser".FullName where(SystemUserId = field(ModifiedOnBehalfBy)));
-            ExternalName = 'modifiedonbehalfbyname';
-            ExternalType = 'String';
-            ExternalAccess = Read;
+            Description = 'De unieke id van de bedrijfseenheid die eigenaar van de record is';
+            Caption = 'Owning Business Unit';
+            TableRelation = "CRM Businessunit".BusinessUnitId;
         }
         field(22; OwningUser; GUID)
         {
@@ -105,7 +89,16 @@
             ExternalAccess = Read;
             Description = 'Unieke id van de gebruiker die eigenaar is van de record.';
             Caption = 'Owning User';
-            TableRelation = "CDS SystemUser".SystemUserId;
+            TableRelation = "CRM Systemuser".SystemUserId;
+        }
+        field(23; OwningTeam; GUID)
+        {
+            ExternalName = 'owningteam';
+            ExternalType = 'Lookup';
+            ExternalAccess = Read;
+            Description = 'De unieke id van het team dat eigenaar is van de record.';
+            Caption = 'Owning Team';
+            TableRelation = "CRM Team".TeamId;
         }
         field(24; statecode; Option)
         {
@@ -173,26 +166,33 @@
             Description = 'Required name field';
             Caption = 'Name';
         }
-        field(34; new_No; Text[100])
+        field(39; cr143_no_BC; Text[100])
         {
-            ExternalName = 'new_no';
+            ExternalName = 'cr143_no_bc';
             ExternalType = 'String';
             Description = '';
-            Caption = 'No';
+            Caption = 'no_BC';
         }
-        field(35; new_LastName; Text[100])
+        field(40; cr143_firstName_BC; Text[100])
         {
-            ExternalName = 'new_lastname';
+            ExternalName = 'cr143_firstname_bc';
             ExternalType = 'String';
             Description = '';
-            Caption = 'Last Name';
+            Caption = 'firstName_BC';
         }
-        field(36; new_FirstName; Text[100])
+        field(41; cr143_lastName_BC; Text[100])
         {
-            ExternalName = 'new_firstname';
+            ExternalName = 'cr143_lastname_bc';
             ExternalType = 'String';
             Description = '';
-            Caption = 'First Name';
+            Caption = 'lastName_BC';
+        }
+        field(42; cr143_jobTitle_BC; Text[100])
+        {
+            ExternalName = 'cr143_jobtitle_bc';
+            ExternalType = 'String';
+            Description = '';
+            Caption = 'jobTitle_BC';
         }
     }
     keys

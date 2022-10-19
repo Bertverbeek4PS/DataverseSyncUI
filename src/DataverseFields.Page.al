@@ -97,10 +97,11 @@ page 70101 "Dataverse Fields"
 
                     trigger OnLookup(var Text: Text): Boolean
                     var
-                        "Field": Record "Field";
+                        "Field": Record Field;
                         FieldSelection: Codeunit "Field Selection";
                     begin
                         Field.SetRange(TableNo, Database::"Dataverse Temp");
+                        Field.SetFilter("No.", '<>1&..1999999999');
                         if FieldSelection.Open(Field) then begin
                             rec."Field on CDS Page" := Field."No.";
                         end;
@@ -109,4 +110,6 @@ page 70101 "Dataverse Fields"
             }
         }
     }
+    var
+        SelectedFieldNotSupportedErr: Label 'Please select a field with the type text.';
 }

@@ -14,11 +14,15 @@ page 70102 "CDS List"
             {
                 field(Id; rec.Id)
                 {
-                    ApplicationArea = All;
                 }
-                field(Text; rec.Text)
+                field(Textfield1; rec.Textfield1)
                 {
-                    ApplicationArea = All;
+                }
+                field(Textfield2; rec.Textfield2)
+                {
+                }
+                field(Textfield3; rec.Textfield3)
+                {
                 }
             }
         }
@@ -115,8 +119,12 @@ page 70102 "CDS List"
     begin
         if DataverseTemp.FieldNo(id) = Fieldno then
             DataverseTemp.Id := CDSTable.FIELD(CDSFieldNo).Value;
-        if DataverseTemp.FieldNo(Text) = Fieldno then
-            DataverseTemp.Text := CDSTable.FIELD(CDSFieldNo).Value;
+        if DataverseTemp.FieldNo(Textfield1) = Fieldno then
+            DataverseTemp.Textfield1 := CDSTable.FIELD(CDSFieldNo).Value;
+        if DataverseTemp.FieldNo(Textfield2) = Fieldno then
+            DataverseTemp.Textfield2 := CDSTable.FIELD(CDSFieldNo).Value;
+        if DataverseTemp.FieldNo(Textfield3) = Fieldno then
+            DataverseTemp.Textfield3 := CDSTable.FIELD(CDSFieldNo).Value;
     end;
 
 

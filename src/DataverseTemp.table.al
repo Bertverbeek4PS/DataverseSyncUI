@@ -13,7 +13,15 @@ table 70105 "Dataverse Temp"
         {
             DataClassification = ToBeClassified;
         }
-        field(3; Text; Text[250])
+        field(3; Textfield1; Text[250])
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(4; Textfield2; Text[250])
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(5; Textfield3; Text[250])
         {
             DataClassification = ToBeClassified;
         }
