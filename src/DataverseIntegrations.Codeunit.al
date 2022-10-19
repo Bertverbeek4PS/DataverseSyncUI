@@ -41,7 +41,7 @@ codeunit 70100 "Dataverse integrations"
                             DataverseFields."BC Field",
                             DataverseFields."Dataverse Field",
                             DataverseFields."Sync Direction".AsInteger(),
-                            '',
+                            DataverseFields."Const Value",
                             DataverseFields."Validate Field",
                             DataverseFields."Validate Integr Table Field");
                     until DataverseFields.Next = 0;
@@ -76,7 +76,7 @@ codeunit 70100 "Dataverse integrations"
                         DataverseFields."BC Field",
                         DataverseFields."Dataverse Field",
                         DataverseFields."Sync Direction".AsInteger(),
-                        '',
+                        DataverseFields."Const Value",
                         DataverseFields."Validate Field",
                         DataverseFields."Validate Integr Table Field");
                 until DataverseFields.Next = 0;
