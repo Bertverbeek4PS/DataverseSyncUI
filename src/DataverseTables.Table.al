@@ -69,6 +69,11 @@ table 70100 "Dataverse Table"
             DataClassification = ToBeClassified;
             Caption = 'Table Name Dataverse';
         }
+        field(12; "Sync Direction"; Enum "Sync Direction")
+        {
+            DataClassification = ToBeClassified;
+            Caption = 'Sync Direction';
+        }
     }
 
     keys

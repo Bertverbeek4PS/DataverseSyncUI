@@ -1,8 +1,8 @@
 codeunit 70100 "Dataverse integrations"
 {
-    local procedure InsertIntegrationTableMapping(var IntegrationTableMapping: Record "Integration Table Mapping"; MappingName: Code[20]; TableNo: Integer; IntegrationTableNo: Integer; IntegrationTableUIDFieldNo: Integer; IntegrationTableModifiedFieldNo: Integer; TableConfigTemplateCode: Code[10]; IntegrationTableConfigTemplateCode: Code[10]; SynchOnlyCoupledRecords: Boolean)
+    local procedure InsertIntegrationTableMapping(var IntegrationTableMapping: Record "Integration Table Mapping"; MappingName: Code[20]; TableNo: Integer; IntegrationTableNo: Integer; IntegrationTableUIDFieldNo: Integer; IntegrationTableModifiedFieldNo: Integer; TableConfigTemplateCode: Code[10]; IntegrationTableConfigTemplateCode: Code[10]; SynchOnlyCoupledRecords: Boolean; Direction: Option)
     begin
-        IntegrationTableMapping.CreateRecord(MappingName, TableNo, IntegrationTableNo, IntegrationTableUIDFieldNo, IntegrationTableModifiedFieldNo, TableConfigTemplateCode, IntegrationTableConfigTemplateCode, SynchOnlyCoupledRecords, IntegrationTableMapping.Direction::Bidirectional, 'CDS');
+        IntegrationTableMapping.CreateRecord(MappingName, TableNo, IntegrationTableNo, IntegrationTableUIDFieldNo, IntegrationTableModifiedFieldNo, TableConfigTemplateCode, IntegrationTableConfigTemplateCode, SynchOnlyCoupledRecords, Direction, 'CDS');
     end;
 
     procedure InsertIntegrationFieldMapping(IntegrationTableMappingName: Code[20]; TableFieldNo: Integer; IntegrationTableFieldNo: Integer; SynchDirection: Option; ConstValue: Text; ValidateField: Boolean; ValidateIntegrationTableField: Boolean)
@@ -28,7 +28,8 @@ codeunit 70100 "Dataverse integrations"
                     IntegrationTableMapping, DataverseTables."Mapping Name",
                     DataverseTables."BC Table", DataverseTables."Dataverse Table",
                     DataverseTables."Dataverse UID", DataverseTables."Modified Field",
-                    '', '', DataverseTables."Sync Only Coupled Records");
+                    '', '', DataverseTables."Sync Only Coupled Records",
+                    DataverseTables."Sync Direction".AsInteger());
 
                 //fields
                 DataverseFields.Reset;
@@ -39,7 +40,7 @@ codeunit 70100 "Dataverse integrations"
                             DataverseFields."Mapping Name",
                             DataverseFields."BC Field",
                             DataverseFields."Dataverse Field",
-                            DataverseFields."Sync Direction",
+                            DataverseFields."Sync Direction".AsInteger(),
                             '',
                             DataverseFields."Validate Field",
                             DataverseFields."Validate Integr Table Field");
@@ -63,7 +64,8 @@ codeunit 70100 "Dataverse integrations"
                 IntegrationTableMapping, DataverseTables."Mapping Name",
                 DataverseTables."BC Table", DataverseTables."Dataverse Table",
                 DataverseTables."Dataverse UID", DataverseTables."Modified Field",
-                '', '', DataverseTables."Sync Only Coupled Records");
+                '', '', DataverseTables."Sync Only Coupled Records",
+                DataverseTables."Sync Direction".AsInteger());
             //fields
             DataverseFields.Reset;
             DataverseFields.SetRange("Mapping Name", IntegrationTableMappingName);
@@ -73,7 +75,7 @@ codeunit 70100 "Dataverse integrations"
                         DataverseFields."Mapping Name",
                         DataverseFields."BC Field",
                         DataverseFields."Dataverse Field",
-                        DataverseFields."Sync Direction",
+                        DataverseFields."Sync Direction".AsInteger(),
                         '',
                         DataverseFields."Validate Field",
                         DataverseFields."Validate Integr Table Field");

@@ -79,10 +79,9 @@ table 70101 "Dataverse Field"
             Caption = 'Dataverse Field Caption';
             FieldClass = FlowField;
         }
-        field(10; "Sync Direction"; Option)
+        field(10; "Sync Direction"; Enum "Sync Direction")
         {
             DataClassification = ToBeClassified;
-            OptionMembers = Bidirectional,ToIntegrationTable,FromIntegrationTable;
             Caption = 'Sync Direction';
         }
         field(11; "Const Value"; Text[50])
