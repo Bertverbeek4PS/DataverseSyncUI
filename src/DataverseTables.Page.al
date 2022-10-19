@@ -69,6 +69,29 @@ page 70100 "Dataverse Tables"
 
     actions
     {
+        area(Processing)
+        {
+            action(ResetConfiguration)
+            {
+                ApplicationArea = Suite;
+                Caption = 'Use Default Synchronization Setup';
+                Image = ResetStatus;
+                ToolTip = 'Resets the integration table mappings and synchronization jobs to the default values for a connection with Dataverse. All current mappings are deleted.', Comment = 'Dataverse is the name of a Microsoft Service and should not be translated.';
+
+                trigger OnAction()
+                var
+                    CDSSetupDefaults: Codeunit "CDS Setup Defaults";
+                    CDSConnectionSetup: Record "CDS Connection Setup";
+                begin
+                    if Confirm(ResetIntegrationTableMappingConfirmQst, false) then begin
+                        if CDSConnectionSetup.Get() then begin
+                            CDSSetupDefaults.ResetConfiguration(CDSConnectionSetup);
+                            Message(SetupSuccessfulMsg);
+                        end;
+                    end;
+                end;
+            }
+        }
         area(Navigation)
         {
             action(Fields)
@@ -81,4 +104,8 @@ page 70100 "Dataverse Tables"
             }
         }
     }
+    var
+        ResetIntegrationTableMappingConfirmQst: Label 'This will restore the default integration table mappings and synchronization jobs for Dataverse. All customizations to mappings and jobs will be deleted. The default mappings and jobs will be used the next time data is synchronized. Do you want to continue?';
+        SetupSuccessfulMsg: Label 'The default setup for Dataverse synchronization has completed successfully.';
+
 }
