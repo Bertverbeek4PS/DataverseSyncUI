@@ -121,6 +121,13 @@ page 70100 "Dataverse Tables"
                 Image = SelectField;
                 RunPageLink = "Mapping Name" = field("Mapping Name"), "BC Table" = field("BC Table"), "Dataverse Table" = field("Dataverse Table");
             }
+            action(IntegrationTableMapping)
+            {
+                ApplicationArea = All;
+                Caption = 'Integration Table Mapping';
+                RunObject = Page "Integration Table Mapping List";
+                Image = MapAccounts;
+            }
         }
     }
     var
