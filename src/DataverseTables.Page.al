@@ -91,6 +91,25 @@ page 70100 "Dataverse Tables"
                     end;
                 end;
             }
+            action(CreateJobQueue)
+            {
+                ApplicationArea = Suite;
+                Caption = 'Create Job Queue';
+                Image = Create;
+                ToolTip = 'Creates a Job Queue of the selected entry';
+
+                trigger OnAction()
+                var
+                    CDSSetupDefaults: Codeunit "CDS Setup Defaults";
+                    IntegrationTableMapping: Record "Integration Table Mapping";
+                    DataverseTables: Record "Dataverse Table";
+                begin
+                    IntegrationTableMapping.Reset;
+                    IntegrationTableMapping.SetRange(Name, Rec."Mapping Name");
+                    If IntegrationTableMapping.FindFirst() then
+                        CDSSetupDefaults.CreateJobQueueEntry(IntegrationTableMapping);
+                end;
+            }
         }
         area(Navigation)
         {
