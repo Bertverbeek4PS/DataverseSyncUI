@@ -91,11 +91,33 @@ page 70100 "Dataverse Tables"
                     end;
                 end;
             }
+            action(CreateTableMapping)
+            {
+                ApplicationArea = Suite;
+                Caption = 'Create Integration Table Mapping';
+                Image = Insert;
+                ToolTip = 'Creates the Integration Table Mapping for the selected record.';
+
+                trigger OnAction()
+                var
+                    DataverseIntegrations: Codeunit "Dataverse integrations";
+                    IntegrationTableMapping: Record "Integration Table Mapping";
+                begin
+                    //Delete IntegrationFieldMapping
+                    IntegrationTableMapping.Reset;
+                    IntegrationTableMapping.SetRange(Name, Rec."Mapping Name");
+                    if not IntegrationTableMapping.IsEmpty then
+                        IntegrationTableMapping.Delete(true);
+
+                    DataverseIntegrations.InsertIntegrationMapping(Rec."Mapping Name");
+                    Message(CreateTableMappingMsg);
+                end;
+            }
             action(CreateJobQueue)
             {
                 ApplicationArea = Suite;
                 Caption = 'Create Job Queue';
-                Image = Create;
+                Image = Insert;
                 ToolTip = 'Creates a Job Queue of the selected entry';
 
                 trigger OnAction()
@@ -108,6 +130,8 @@ page 70100 "Dataverse Tables"
                     IntegrationTableMapping.SetRange(Name, Rec."Mapping Name");
                     If IntegrationTableMapping.FindFirst() then
                         CDSSetupDefaults.CreateJobQueueEntry(IntegrationTableMapping);
+
+                    Message(CreateJobQueue);
                 end;
             }
         }
@@ -133,5 +157,7 @@ page 70100 "Dataverse Tables"
     var
         ResetIntegrationTableMappingConfirmQst: Label 'This will restore the default integration table mappings and synchronization jobs for Dataverse. All customizations to mappings and jobs will be deleted. The default mappings and jobs will be used the next time data is synchronized. Do you want to continue?';
         SetupSuccessfulMsg: Label 'The default setup for Dataverse synchronization has completed successfully.';
+        CreateTableMappingMsg: Label 'The Integration Table Mapping is succesfully created.';
+        CreateJobQueue: Label 'The Job Queue is succesfully created.';
 
 }
