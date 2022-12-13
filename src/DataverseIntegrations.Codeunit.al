@@ -135,4 +135,67 @@ codeunit 70100 "Dataverse integrations"
             CRMId := DataverseTemp.CRMId;
         end;
     end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Integration Rec. Synch. Invoke", 'OnDeletionConflictDetected', '', false, false)]
+    local procedure HandleOnDeletionConflictDetected(var IntegrationTableMapping: Record "Integration Table Mapping"; var SourceRecordRef: RecordRef; var DeletionConflictHandled: Boolean)
+    var
+        CRMIntegrationRecord: Record "CRM Integration Record";
+        CRMIntegrationManagement: Codeunit "CRM Integration Management";
+    begin
+        if DeletionConflictHandled then
+            exit;
+
+        if not (CRMIntegrationManagement.IsCDSIntegrationEnabled() or CRMIntegrationManagement.IsCRMIntegrationEnabled()) then
+            exit;
+
+        if IntegrationTableMapping."Deletion-Conflict Resolution" = IntegrationTableMapping."Deletion-Conflict Resolution"::"Delete Records" then begin
+            //Delete coupling
+            if CRMIntegrationRecord.IsRecordCoupled(SourceRecordRef.RecordId) then
+                CRMIntegrationRecord.RemoveCouplingToRecord(SourceRecordRef);
+            //Delete record
+            if SourceRecordRef.Delete() then;
+
+            DeletionConflictHandled := true;
+        end;
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::GlobalTriggerManagement, 'OnAfterOnDatabaseDelete', '', false, false)]
+    local procedure OnAfterOnDatabaseDelete(RecRef: RecordRef)
+    var
+        IntegrationTableMapping: Record "Integration Table Mapping";
+        CRMIntegrationRecord: Record "CRM Integration Record";
+        CDSRecRef: RecordRef;
+        CDSFieldRef: FieldRef;
+        CRMID: Guid;
+        RecID: RecordId;
+    begin
+        IntegrationTableMapping.Reset;
+        IntegrationTableMapping.SetRange("Table ID", RecRef.Number);
+        If not IntegrationTableMapping.FindFirst() then
+            exit;
+        if IntegrationTableMapping."Deletion-Conflict Resolution" <> IntegrationTableMapping."Deletion-Conflict Resolution"::"Delete Records" then
+            exit;
+
+        //Delete Dataverse Record
+        CRMIntegrationRecord.FindIDFromRecordRef(RecRef, CRMID);
+        CDSRecRef.Open(IntegrationTableMapping."Integration Table ID");
+        CDSFieldRef := CDSRecRef.Field(IntegrationTableMapping."Integration Table UID Fld. No.");
+        CDSFieldRef.Value := CRMID;
+        if CDSRecRef.Find('=') then begin
+            RecID := CDSRecRef.RecordId;
+            if CDSRecRef.Get(RecID) then
+                CDSRecRef.Delete();
+        end;
+
+        //Delete coupling
+        if CRMIntegrationRecord.IsRecordCoupled(RecRef.RecordId) then
+            CRMIntegrationRecord.RemoveCouplingToRecord(RecRef);
+
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Global Triggers", 'GetDatabaseTableTriggerSetup', '', true, true)]
+    local procedure GetDatabaseTableTriggerSetup(var OnDatabaseDelete: Boolean; var OnDatabaseInsert: Boolean; var OnDatabaseModify: Boolean; TableId: Integer)
+    begin
+        OnDatabaseDelete := true;
+    end;
 }

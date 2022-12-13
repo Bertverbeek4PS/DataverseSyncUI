@@ -125,11 +125,12 @@ page 70100 "Dataverse Tables"
                     CDSSetupDefaults: Codeunit "CDS Setup Defaults";
                     IntegrationTableMapping: Record "Integration Table Mapping";
                     DataverseTables: Record "Dataverse Table";
+                    JobQueueEntryNameTok: Label ' %1 - %2 synchronization job.', Comment = '%1 = The Integration Table Name to synchronized (ex. CUSTOMER), %2 = CRM product name';
                 begin
                     IntegrationTableMapping.Reset;
                     IntegrationTableMapping.SetRange(Name, Rec."Mapping Name");
                     If IntegrationTableMapping.FindFirst() then
-                        CDSSetupDefaults.CreateJobQueueEntry(IntegrationTableMapping);
+                        Rec.CreateJobQueueEntry(IntegrationTableMapping, Codeunit::"Integration Synch. Job Runner", StrSubstNo(JobQueueEntryNameTok, IntegrationTableMapping.GetTempDescription()));
 
                     Message(CreateJobQueue);
                 end;

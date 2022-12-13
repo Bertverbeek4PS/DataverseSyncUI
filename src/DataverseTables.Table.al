@@ -92,4 +92,41 @@ table 70100 "Dataverse Table"
         DataverseField.SetRange("Mapping Name", "Mapping Name");
         DataverseField.DeleteAll();
     end;
+
+    procedure CreateJobQueueEntry(var IntegrationTableMapping: Record "Integration Table Mapping"; JobCodeunitId: Integer; JobDescription: Text)
+    var
+        JobQueueEntry: Record "Job Queue Entry";
+        StartTime: DateTime;
+        JobQueueCategoryLbl: Label 'BCI INTEG', Locked = true;
+    begin
+        StartTime := CurrentDateTime() + 1000;
+        JobQueueEntry.SetRange("Object Type to Run", JobQueueEntry."Object Type to Run"::Codeunit);
+        JobQueueEntry.SetRange("Object ID to Run", JobCodeunitId);
+        JobQueueEntry.SetRange("Record ID to Process", IntegrationTableMapping.RecordId());
+        JobQueueEntry.SetRange("Job Queue Category Code", JobQueueCategoryLbl);
+        JobQueueEntry.SetRange(Status, JobQueueEntry.Status::Ready);
+        JobQueueEntry.SetFilter("Earliest Start Date/Time", '<=%1', StartTime);
+        if not JobQueueEntry.IsEmpty() then begin
+            JobQueueEntry.DeleteTasks();
+            Commit();
+        end;
+
+        JobQueueEntry.Init();
+        Clear(JobQueueEntry.ID); // "Job Queue - Enqueue" is to define new ID
+        JobQueueEntry."Earliest Start Date/Time" := StartTime;
+        JobQueueEntry."Object Type to Run" := JobQueueEntry."Object Type to Run"::Codeunit;
+        JobQueueEntry."Object ID to Run" := JobCodeunitId;
+        JobQueueEntry."Record ID to Process" := IntegrationTableMapping.RecordId();
+        JobQueueEntry."Run in User Session" := false;
+        JobQueueEntry."Notify On Success" := false;
+        JobQueueEntry."Maximum No. of Attempts to Run" := 2;
+        JobQueueEntry."Job Queue Category Code" := JobQueueCategoryLbl;
+        JobQueueEntry.Status := JobQueueEntry.Status::Ready;
+        JobQueueEntry."Rerun Delay (sec.)" := 30;
+        JobQueueEntry."No. of Minutes between Runs" := 30;
+        JobQueueEntry.Description := CopyStr(JobDescription, 1, MaxStrLen(JobQueueEntry.Description));
+        JobQueueEntry."Recurring Job" := true;
+        JobQueueEntry."Inactivity Timeout Period" := 720;
+        JobQueueEntry.Insert(true);
+    end;
 }
