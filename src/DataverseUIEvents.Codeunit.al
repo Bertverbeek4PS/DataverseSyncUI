@@ -1,35 +1,35 @@
-codeunit 70100 "Dataverse integrations"
+codeunit 70100 "Dataverse UI Events"
 {
     procedure InsertIntegrationMapping(IntegrationTableMappingName: Code[20])
     var
         IntegrationTableMapping: Record "Integration Table Mapping";
         IntegrationFieldMapping: Record "Integration Field Mapping";
-        DataverseTables: Record "Dataverse Table";
-        DataverseFields: Record "Dataverse Field";
+        DataverseUITable: Record "Dataverse UI Table";
+        DataverseUIField: Record "Dataverse UI Field";
     begin
-        DataverseTables.Reset;
-        DataverseTables.SetRange("Mapping Name", IntegrationTableMappingName);
-        if DataverseTables.FindFirst() then begin
+        DataverseUITable.Reset;
+        DataverseUITable.SetRange("Mapping Name", IntegrationTableMappingName);
+        if DataverseUITable.FindFirst() then begin
             InsertIntegrationTableMapping(
-                IntegrationTableMapping, DataverseTables."Mapping Name",
-                DataverseTables."BC Table", DataverseTables."Dataverse Table",
-                DataverseTables."Dataverse UID", DataverseTables."Modified Field",
-                '', '', DataverseTables."Sync Only Coupled Records",
-                DataverseTables."Sync Direction".AsInteger());
+                IntegrationTableMapping, DataverseUITable."Mapping Name",
+                DataverseUITable."BC Table", DataverseUITable."Dataverse Table",
+                DataverseUITable."Dataverse UID", DataverseUITable."Modified Field",
+                '', '', DataverseUITable."Sync Only Coupled Records",
+                DataverseUITable."Sync Direction".AsInteger());
             //fields
-            DataverseFields.Reset;
-            DataverseFields.SetRange("Mapping Name", IntegrationTableMappingName);
-            if DataverseFields.FindSet then
+            DataverseUIField.Reset;
+            DataverseUIField.SetRange("Mapping Name", IntegrationTableMappingName);
+            if DataverseUIField.FindSet then
                 repeat
                     InsertIntegrationFieldMapping(
-                        DataverseFields."Mapping Name",
-                        DataverseFields."BC Field",
-                        DataverseFields."Dataverse Field",
-                        DataverseFields."Sync Direction".AsInteger(),
-                        DataverseFields."Const Value",
-                        DataverseFields."Validate Field",
-                        DataverseFields."Validate Integr Table Field");
-                until DataverseFields.Next = 0;
+                        DataverseUIField."Mapping Name",
+                        DataverseUIField."BC Field",
+                        DataverseUIField."Dataverse Field",
+                        DataverseUIField."Sync Direction".AsInteger(),
+                        DataverseUIField."Const Value",
+                        DataverseUIField."Validate Field",
+                        DataverseUIField."Validate Integr Table Field");
+                until DataverseUIField.Next = 0;
         end;
     end;
 
@@ -52,35 +52,35 @@ codeunit 70100 "Dataverse integrations"
     local procedure HandleOnAfterResetConfiguration(CDSConnectionSetup: Record "CDS Connection Setup")
     var
         IntegrationTableMapping: Record "Integration Table Mapping";
-        DataverseTables: Record "Dataverse Table";
-        DataverseFields: Record "Dataverse Field";
+        DataverseUITable: Record "Dataverse UI Table";
+        DataverseUIField: Record "Dataverse UI Field";
     begin
         //tables
-        DataverseTables.Reset;
-        if DataverseTables.FindSet then
+        DataverseUITable.Reset;
+        if DataverseUITable.FindSet then
             repeat
                 InsertIntegrationTableMapping(
-                    IntegrationTableMapping, DataverseTables."Mapping Name",
-                    DataverseTables."BC Table", DataverseTables."Dataverse Table",
-                    DataverseTables."Dataverse UID", DataverseTables."Modified Field",
-                    '', '', DataverseTables."Sync Only Coupled Records",
-                    DataverseTables."Sync Direction".AsInteger());
+                    IntegrationTableMapping, DataverseUITable."Mapping Name",
+                    DataverseUITable."BC Table", DataverseUITable."Dataverse Table",
+                    DataverseUITable."Dataverse UID", DataverseUITable."Modified Field",
+                    '', '', DataverseUITable."Sync Only Coupled Records",
+                    DataverseUITable."Sync Direction".AsInteger());
 
                 //fields
-                DataverseFields.Reset;
-                DataverseFields.SetRange("Mapping Name", DataverseTables."Mapping Name");
-                if DataverseFields.FindSet then
+                DataverseUIField.Reset;
+                DataverseUIField.SetRange("Mapping Name", DataverseUITable."Mapping Name");
+                if DataverseUIField.FindSet then
                     repeat
                         InsertIntegrationFieldMapping(
-                            DataverseFields."Mapping Name",
-                            DataverseFields."BC Field",
-                            DataverseFields."Dataverse Field",
-                            DataverseFields."Sync Direction".AsInteger(),
-                            DataverseFields."Const Value",
-                            DataverseFields."Validate Field",
-                            DataverseFields."Validate Integr Table Field");
-                    until DataverseFields.Next = 0;
-            until DataverseTables.Next() = 0;
+                            DataverseUIField."Mapping Name",
+                            DataverseUIField."BC Field",
+                            DataverseUIField."Dataverse Field",
+                            DataverseUIField."Sync Direction".AsInteger(),
+                            DataverseUIField."Const Value",
+                            DataverseUIField."Validate Field",
+                            DataverseUIField."Validate Integr Table Field");
+                    until DataverseUIField.Next = 0;
+            until DataverseUIField.Next() = 0;
 
     end;
 
@@ -94,45 +94,45 @@ codeunit 70100 "Dataverse integrations"
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"CRM Setup Defaults", 'OnGetCDSTableNo', '', false, false)]
     local procedure HandleOnGetCDSTableNo(BCTableNo: Integer; var CDSTableNo: Integer; var handled: Boolean)
     var
-        DataverseTables: Record "Dataverse Table";
+        DataverseUITable: Record "Dataverse UI Table";
     begin
-        DataverseTables.Reset;
-        if DataverseTables.FindSet then
+        DataverseUITable.Reset;
+        if DataverseUITable.FindSet then
             repeat
-                if BCTableNo = DataverseTables."BC Table" then begin
-                    CDSTableNo := DataverseTables."Dataverse Table";
+                if BCTableNo = DataverseUITable."BC Table" then begin
+                    CDSTableNo := DataverseUITable."Dataverse Table";
                     handled := true;
                 end;
-            until DataverseTables.Next = 0;
+            until DataverseUITable.Next = 0;
     end;
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"CRM Setup Defaults", 'OnAddEntityTableMapping', '', true, true)]
     local procedure HandleOnAddEntityTableMapping(var TempNameValueBuffer: Record "Name/Value Buffer" temporary);
     var
         CRMSetupDefaults: Codeunit "CRM Setup Defaults";
-        DataverseTables: Record "Dataverse Table";
+        DataverseUITable: Record "Dataverse UI Table";
     begin
-        DataverseTables.Reset;
-        if DataverseTables.FindSet then
+        DataverseUITable.Reset;
+        if DataverseUITable.FindSet then
             repeat
-                CRMSetupDefaults.AddEntityTableMapping(DataverseTables."Table Name Dataverse", DataverseTables."BC Table", TempNameValueBuffer);
-                CRMSetupDefaults.AddEntityTableMapping(DataverseTables."Table Name Dataverse", DataverseTables."Dataverse Table", TempNameValueBuffer);
-            until DataverseTables.Next = 0;
+                CRMSetupDefaults.AddEntityTableMapping(DataverseUITable."Table Name Dataverse", DataverseUITable."BC Table", TempNameValueBuffer);
+                CRMSetupDefaults.AddEntityTableMapping(DataverseUITable."Table Name Dataverse", DataverseUITable."Dataverse Table", TempNameValueBuffer);
+            until DataverseUITable.Next = 0;
     end;
 
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Lookup CRM Tables", 'OnLookupCRMTables', '', true, true)]
     local procedure HandleOnLookupCRMTables(CRMTableID: Integer; NAVTableId: Integer; SavedCRMId: Guid; var CRMId: Guid; IntTableFilter: Text; var Handled: Boolean)
     var
-        Dataverse: Page "CDS List";
-        DataverseTemp: Record "Dataverse Temp";
+        DataverseUIList: Page "Dataverse UI List";
+        DataverseUITempTable: Record "Dataverse UI Temp Table";
     begin
-        Dataverse.SetGlobalVar(CRMTableID, NAVTableId, SavedCRMId, CRMId, IntTableFilter);
+        DataverseUIList.SetGlobalVar(CRMTableID, NAVTableId, SavedCRMId, CRMId, IntTableFilter);
 
-        Dataverse.LookupMode(true);
-        if Dataverse.RunModal = ACTION::LookupOK then begin
-            Dataverse.GetRecord(DataverseTemp);
-            CRMId := DataverseTemp.CRMId;
+        DataverseUIList.LookupMode(true);
+        if DataverseUIList.RunModal = ACTION::LookupOK then begin
+            DataverseUIList.GetRecord(DataverseUITempTable);
+            CRMId := DataverseUITempTable.CRMId;
         end;
     end;
 

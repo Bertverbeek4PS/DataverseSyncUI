@@ -1,4 +1,4 @@
-table 70105 "Dataverse Temp"
+table 70105 "Dataverse UI Temp Table"
 {
     DataClassification = ToBeClassified;
     TableType = Temporary;

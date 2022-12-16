@@ -1,9 +1,9 @@
-page 70100 "Dataverse Tables"
+page 70100 "Dataverse UI Setup"
 {
     PageType = List;
     ApplicationArea = All;
     UsageCategory = Administration;
-    SourceTable = "Dataverse Table";
+    SourceTable = "Dataverse UI Table";
 
     layout
     {
@@ -100,7 +100,7 @@ page 70100 "Dataverse Tables"
 
                 trigger OnAction()
                 var
-                    DataverseIntegrations: Codeunit "Dataverse integrations";
+                    DataverseUIEvents: Codeunit "Dataverse UI Events";
                     IntegrationTableMapping: Record "Integration Table Mapping";
                 begin
                     //Delete IntegrationFieldMapping
@@ -109,7 +109,7 @@ page 70100 "Dataverse Tables"
                     if not IntegrationTableMapping.IsEmpty then
                         IntegrationTableMapping.Delete(true);
 
-                    DataverseIntegrations.InsertIntegrationMapping(Rec."Mapping Name");
+                    DataverseUIEvents.InsertIntegrationMapping(Rec."Mapping Name");
                     Message(CreateTableMappingMsg);
                 end;
             }
@@ -124,7 +124,6 @@ page 70100 "Dataverse Tables"
                 var
                     CDSSetupDefaults: Codeunit "CDS Setup Defaults";
                     IntegrationTableMapping: Record "Integration Table Mapping";
-                    DataverseTables: Record "Dataverse Table";
                     JobQueueEntryNameTok: Label ' %1 - %2 synchronization job.', Comment = '%1 = The Integration Table Name to synchronized (ex. CUSTOMER), %2 = CRM product name';
                 begin
                     IntegrationTableMapping.Reset;
@@ -142,7 +141,7 @@ page 70100 "Dataverse Tables"
             {
                 ApplicationArea = All;
                 Caption = 'Fields';
-                RunObject = Page "Dataverse Fields";
+                RunObject = Page "Dataverse UI Fields";
                 Image = SelectField;
                 RunPageLink = "Mapping Name" = field("Mapping Name"), "BC Table" = field("BC Table"), "Dataverse Table" = field("Dataverse Table");
             }

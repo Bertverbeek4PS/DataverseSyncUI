@@ -1,7 +1,7 @@
-page 70102 "CDS List"
+page 70102 "Dataverse UI List"
 {
     PageType = List;
-    SourceTable = "Dataverse Temp";
+    SourceTable = "Dataverse UI Temp Table";
     Editable = false;
     ApplicationArea = All;
     UsageCategory = Lists;
@@ -42,19 +42,19 @@ page 70102 "CDS List"
 
                 trigger OnAction()
                 var
-                    DataverseTemp: Record "Dataverse Temp";
+                    DataverseUITempTable: Record "Dataverse UI Temp Table";
                     CRMIntegrationManagement: Codeunit "CRM Integration Management";
-                    DataverseTabled: Record "Dataverse Table";
+                    DataverseUITable: Record "Dataverse UI Table";
                     RecRef: RecordRef;
                     MyFieldRef: FieldRef;
                     RecID: RecordId;
                 begin
-                    CurrPage.GetRecord(DataverseTemp);
-                    DataverseTabled.Reset;
-                    DataverseTabled.SetRange("BC Table", NAVTableId);
-                    if DataverseTabled.FindFirst() then begin
-                        RecRef.Open(DataverseTabled."Dataverse Table");
-                        MyFieldRef := RecRef.Field(DataverseTabled."Dataverse UID");
+                    CurrPage.GetRecord(DataverseUITempTable);
+                    DataverseUITable.Reset;
+                    DataverseUITable.SetRange("BC Table", NAVTableId);
+                    if DataverseUITable.FindFirst() then begin
+                        RecRef.Open(DataverseUITable."Dataverse Table");
+                        MyFieldRef := RecRef.Field(DataverseUITable."Dataverse UID");
                         MyFieldRef.Value := gCRMId;
                         if RecRef.Find('=') then begin
                             RecID := RecRef.RecordId;
@@ -89,42 +89,42 @@ page 70102 "CDS List"
             CurrPage.SetRecord(rec);
     end;
 
-    local procedure InsertDataverseTempRecords(CRMTableID: Integer; NAVTableId: Integer; var DataverseTemp: Record "Dataverse Temp");
+    local procedure InsertDataverseTempRecords(CRMTableID: Integer; NAVTableId: Integer; var DataverseUITempTable: Record "Dataverse UI Temp Table");
     var
         CDSTable: RecordRef;
         FldRef: FieldRef;
-        DataverseFields: Record "Dataverse Field";
-        DataverseTable: Record "Dataverse Table";
+        DataverseUIField: Record "Dataverse UI Field";
+        DataverseUITable: Record "Dataverse UI Table";
     begin
         CDSTable.Open(CRMTableID);
         if CDSTable.FindSet() then
             repeat
-                DataverseFields.Reset;
-                DataverseFields.SetRange("Dataverse Table", CDSTable.Number);
-                DataverseFields.SetFilter("Field on CDS Page", '<>%1', 0);
-                If DataverseFields.FindSet then
+                DataverseUIField.Reset;
+                DataverseUIField.SetRange("Dataverse Table", CDSTable.Number);
+                DataverseUIField.SetFilter("Field on CDS Page", '<>%1', 0);
+                If DataverseUIField.FindSet then
                     repeat
-                        InsertValue(DataverseTemp, DataverseFields."Field on CDS Page", CDSTable, DataverseFields."Dataverse Field");
-                    Until DataverseFields.Next = 0;
-                DataverseTable.Reset;
-                DataverseTable.SetRange("Dataverse Table", CRMTableID);
-                If DataverseTable.FindFirst then begin
-                    DataverseTemp.CRMId := CDSTable.FIELD(DataverseTable."Dataverse UID").Value;
+                        InsertValue(DataverseUITempTable, DataverseUIField."Field on CDS Page", CDSTable, DataverseUIField."Dataverse Field");
+                    Until DataverseUIField.Next = 0;
+                DataverseUITable.Reset;
+                DataverseUITable.SetRange("Dataverse Table", CRMTableID);
+                If DataverseUITable.FindFirst then begin
+                    DataverseUITempTable.CRMId := CDSTable.FIELD(DataverseUITable."Dataverse UID").Value;
                 end;
-                DataverseTemp.Insert;
+                DataverseUITempTable.Insert;
             Until CDSTable.Next = 0;
     end;
 
-    local procedure InsertValue(var DataverseTemp: Record "Dataverse Temp"; Fieldno: integer; CDSTable: RecordRef; CDSFieldNo: Integer);
+    local procedure InsertValue(var DataverseUITempTable: Record "Dataverse UI Temp Table"; Fieldno: integer; CDSTable: RecordRef; CDSFieldNo: Integer);
     begin
-        if DataverseTemp.FieldNo(id) = Fieldno then
-            DataverseTemp.Id := CDSTable.FIELD(CDSFieldNo).Value;
-        if DataverseTemp.FieldNo(Textfield1) = Fieldno then
-            DataverseTemp.Textfield1 := CDSTable.FIELD(CDSFieldNo).Value;
-        if DataverseTemp.FieldNo(Textfield2) = Fieldno then
-            DataverseTemp.Textfield2 := CDSTable.FIELD(CDSFieldNo).Value;
-        if DataverseTemp.FieldNo(Textfield3) = Fieldno then
-            DataverseTemp.Textfield3 := CDSTable.FIELD(CDSFieldNo).Value;
+        if DataverseUITempTable.FieldNo(id) = Fieldno then
+            DataverseUITempTable.Id := CDSTable.FIELD(CDSFieldNo).Value;
+        if DataverseUITempTable.FieldNo(Textfield1) = Fieldno then
+            DataverseUITempTable.Textfield1 := CDSTable.FIELD(CDSFieldNo).Value;
+        if DataverseUITempTable.FieldNo(Textfield2) = Fieldno then
+            DataverseUITempTable.Textfield2 := CDSTable.FIELD(CDSFieldNo).Value;
+        if DataverseUITempTable.FieldNo(Textfield3) = Fieldno then
+            DataverseUITempTable.Textfield3 := CDSTable.FIELD(CDSFieldNo).Value;
     end;
 
 
