@@ -5,11 +5,11 @@ If you have some advanced scenario's you should do it via code.
 Please if you have any ideas contribute to it if you have any ideas.
 
 Feature update:
-
-[20221216] - Better naming conventions
-20221213 - Added feature to remove deleted records in BC and in Dataverse
-20221212 - Added feature to add Job Queue
-20221019 - Added feature to add also a constant value
+--------------- | ---
+20221216 | Better naming conventions
+20221213 | Added feature to remove deleted records in BC and in Dataverse
+20221212 | Added feature to add Job Queue
+20221019 | Added feature to add also a constant value
 
 
 Blog about it:
