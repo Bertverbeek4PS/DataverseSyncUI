@@ -1,75 +1,75 @@
-table 70100 "Dataverse Table"
+table 70100 "Dataverse UI Table"
 {
     DataClassification = ToBeClassified;
 
     fields
     {
-        field(1; "Mapping Name"; Code[20])
+        field(10; "Mapping Name"; Code[20])
         {
             DataClassification = ToBeClassified;
             Caption = 'Mapping Name';
         }
-        field(2; "BC Table"; integer)
+        field(20; "BC Table"; integer)
         {
             DataClassification = ToBeClassified;
             TableRelation = AllObjWithCaption."Object ID" where("Object Type" = CONST(Table), "Object Subtype" = CONST('Normal'));
             Caption = 'BC Table';
         }
-        field(3; "BC Table Caption"; Text[100])
+        field(30; "BC Table Caption"; Text[100])
         {
             CalcFormula = Lookup(AllObjWithCaption."Object Name" WHERE("Object ID" = FIELD("BC Table")));
             Caption = 'BC Table Caption';
             FieldClass = FlowField;
         }
-        field(4; "Dataverse Table"; integer)
+        field(40; "Dataverse Table"; integer)
         {
             DataClassification = ToBeClassified;
             TableRelation = AllObjWithCaption."Object ID" where("Object Type" = CONST(Table), "Object Subtype" = CONST('CRM'));
             Caption = 'Dataverse Table';
         }
-        field(5; "Dataverse Table Caption"; Text[100])
+        field(50; "Dataverse Table Caption"; Text[100])
         {
             CalcFormula = Lookup(AllObjWithCaption."Object Name" WHERE("Object ID" = FIELD("Dataverse Table")));
             Caption = 'Dataverse Table Caption';
             FieldClass = FlowField;
         }
-        field(6; "Dataverse UID"; integer)
+        field(60; "Dataverse UID"; integer)
         {
             DataClassification = ToBeClassified;
             TableRelation = Field."No." where(TableNo = field("Dataverse table"));
             Caption = 'Dataverse UID';
         }
-        field(7; "Dataverse UID Caption"; Text[100])
+        field(70; "Dataverse UID Caption"; Text[100])
         {
             CalcFormula = Lookup(Field."Field Caption" WHERE(TableNo = FIELD("Dataverse Table"),
                                                               "No." = FIELD("Dataverse UID")));
             Caption = 'Dataverse UID Caption';
             FieldClass = FlowField;
         }
-        field(8; "Modified Field"; integer)
+        field(80; "Modified Field"; integer)
         {
             DataClassification = ToBeClassified;
             TableRelation = Field."No." where(TableNo = field("Dataverse table"));
             Caption = 'Modified Field';
         }
-        field(9; "Modified Field Caption"; Text[100])
+        field(90; "Modified Field Caption"; Text[100])
         {
             CalcFormula = Lookup(Field."Field Caption" WHERE(TableNo = FIELD("Dataverse Table"),
                                                               "No." = FIELD("Modified Field")));
             Caption = 'Modified Field Caption';
             FieldClass = FlowField;
         }
-        field(10; "Sync Only Coupled Records"; Boolean)
+        field(100; "Sync Only Coupled Records"; Boolean)
         {
             DataClassification = ToBeClassified;
             Caption = 'Sync Only Coupled Records';
         }
-        field(11; "Table Name Dataverse"; Text[100])
+        field(110; "Table Name Dataverse"; Text[100])
         {
             DataClassification = ToBeClassified;
             Caption = 'Table Name Dataverse';
         }
-        field(12; "Sync Direction"; Enum "Sync Direction")
+        field(120; "Sync Direction"; Enum "Dataverse UI Sync Direct.")
         {
             DataClassification = ToBeClassified;
             Caption = 'Sync Direction';
@@ -86,11 +86,11 @@ table 70100 "Dataverse Table"
 
     trigger OnDelete()
     var
-        DataverseField: Record "Dataverse Field";
+        DataverseUIField: Record "Dataverse UI Field";
     begin
-        DataverseField.Reset;
-        DataverseField.SetRange("Mapping Name", "Mapping Name");
-        DataverseField.DeleteAll();
+        DataverseUIField.Reset;
+        DataverseUIField.SetRange("Mapping Name", "Mapping Name");
+        DataverseUIField.DeleteAll();
     end;
 
     procedure CreateJobQueueEntry(var IntegrationTableMapping: Record "Integration Table Mapping"; JobCodeunitId: Integer; JobDescription: Text)

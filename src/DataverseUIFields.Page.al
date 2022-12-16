@@ -1,7 +1,7 @@
-page 70101 "Dataverse Fields"
+page 70101 "Dataverse UI Fields"
 {
     PageType = List;
-    SourceTable = "Dataverse Field";
+    SourceTable = "Dataverse UI Field";
 
     layout
     {
@@ -100,7 +100,7 @@ page 70101 "Dataverse Fields"
                         "Field": Record Field;
                         FieldSelection: Codeunit "Field Selection";
                     begin
-                        Field.SetRange(TableNo, Database::"Dataverse Temp");
+                        Field.SetRange(TableNo, Database::"Dataverse UI Temp Table");
                         Field.SetFilter("No.", '<>1&..1999999999');
                         if FieldSelection.Open(Field) then begin
                             rec."Field on CDS Page" := Field."No.";

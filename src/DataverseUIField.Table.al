@@ -1,28 +1,28 @@
-table 70101 "Dataverse Field"
+table 70101 "Dataverse UI Field"
 {
     DataClassification = ToBeClassified;
 
     fields
     {
-        field(1; "Mapping Name"; Code[20])
+        field(10; "Mapping Name"; Code[20])
         {
             DataClassification = ToBeClassified;
-            TableRelation = "Dataverse Table"."Mapping Name";
+            TableRelation = "Dataverse UI Table"."Mapping Name";
             Caption = 'Mapping Name';
         }
-        field(2; "BC Table"; Integer)
+        field(20; "BC Table"; Integer)
         {
             DataClassification = ToBeClassified;
-            TableRelation = "Dataverse Table"."BC Table";
+            TableRelation = "Dataverse UI Table"."BC Table";
             Caption = 'BC Table';
         }
-        field(3; "BC Table Caption"; Text[100])
+        field(30; "BC Table Caption"; Text[100])
         {
             CalcFormula = Lookup(AllObjWithCaption."Object Name" WHERE("Object ID" = FIELD("BC Table")));
             Caption = 'BC Table Caption';
             FieldClass = FlowField;
         }
-        field(4; "BC Field"; Integer)
+        field(40; "BC Field"; Integer)
         {
             DataClassification = ToBeClassified;
             TableRelation = Field."No." where(TableNo = field("BC Table"));
@@ -36,26 +36,26 @@ table 70101 "Dataverse Field"
                 CheckFieldTypeForSync(Fld);
             end;
         }
-        field(5; "BC Field Caption"; Text[100])
+        field(50; "BC Field Caption"; Text[100])
         {
             CalcFormula = Lookup(Field."Field Caption" WHERE(TableNo = FIELD("BC Table"),
                                                               "No." = FIELD("BC Field")));
             Caption = 'BC Field Caption';
             FieldClass = FlowField;
         }
-        field(6; "Dataverse Table"; Integer)
+        field(60; "Dataverse Table"; Integer)
         {
             DataClassification = ToBeClassified;
-            TableRelation = "Dataverse Table"."Dataverse Table";
+            TableRelation = "Dataverse UI Table"."Dataverse Table";
             Caption = 'Dataverse Table';
         }
-        field(7; "Dataverse Table Caption"; Text[100])
+        field(70; "Dataverse Table Caption"; Text[100])
         {
             CalcFormula = Lookup(AllObjWithCaption."Object Name" WHERE("Object ID" = FIELD("Dataverse Table")));
             Caption = 'Dataverse Table Caption';
             FieldClass = FlowField;
         }
-        field(8; "Dataverse Field"; Integer)
+        field(80; "Dataverse Field"; Integer)
         {
             DataClassification = ToBeClassified;
             TableRelation = Field."No." where(TableNo = field("Dataverse Table"));
@@ -72,34 +72,34 @@ table 70101 "Dataverse Field"
                 CompareFieldType(FldBC, FldDataverse);
             end;
         }
-        field(9; "Dataverse Field Caption"; Text[100])
+        field(90; "Dataverse Field Caption"; Text[100])
         {
             CalcFormula = Lookup(Field."Field Caption" WHERE(TableNo = FIELD("Dataverse Table"),
                                                               "No." = FIELD("Dataverse Field")));
             Caption = 'Dataverse Field Caption';
             FieldClass = FlowField;
         }
-        field(10; "Sync Direction"; Enum "Sync Direction")
+        field(100; "Sync Direction"; Enum "Dataverse UI Sync Direct.")
         {
             DataClassification = ToBeClassified;
             Caption = 'Sync Direction';
         }
-        field(11; "Const Value"; Text[50])
+        field(110; "Const Value"; Text[50])
         {
             DataClassification = ToBeClassified;
             Caption = 'Const Value';
         }
-        field(12; "Validate Field"; Boolean)
+        field(120; "Validate Field"; Boolean)
         {
             DataClassification = ToBeClassified;
             Caption = 'Validate Field';
         }
-        field(13; "Validate Integr Table Field"; Boolean)
+        field(130; "Validate Integr Table Field"; Boolean)
         {
             DataClassification = ToBeClassified;
             Caption = 'Validate Integration Table Field';
         }
-        field(14; "Field on CDS Page"; Integer)
+        field(140; "Field on CDS Page"; Integer)
         {
             DataClassification = ToBeClassified;
             TableRelation = Field where(TableNo = const(70105));
