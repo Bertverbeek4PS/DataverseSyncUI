@@ -12,24 +12,45 @@ table 70100 "Dataverse UI Table"
         field(20; "BC Table"; integer)
         {
             DataClassification = ToBeClassified;
-            TableRelation = AllObjWithCaption."Object ID" where("Object Type" = CONST(Table), "Object Subtype" = CONST('Normal'));
+            TableRelation = AllObjWithCaption."Object ID" where("Object Type" = Const(Table), "Object Subtype" = Const('Normal'));
             Caption = 'BC Table';
         }
         field(30; "BC Table Caption"; Text[100])
         {
-            CalcFormula = Lookup(AllObjWithCaption."Object Name" WHERE("Object ID" = FIELD("BC Table")));
+            CalcFormula = Lookup(AllObjWithCaption."Object Name" Where("Object ID" = Field("BC Table")));
             Caption = 'BC Table Caption';
             FieldClass = FlowField;
         }
         field(40; "Dataverse Table"; integer)
         {
             DataClassification = ToBeClassified;
-            TableRelation = AllObjWithCaption."Object ID" where("Object Type" = CONST(Table), "Object Subtype" = CONST('CRM'));
+            TableRelation = AllObjWithCaption."Object ID" where("Object Type" = Const(Table), "Object Subtype" = Const('CRM'));
             Caption = 'Dataverse Table';
+
+            trigger OnValidate()
+            var
+                DataverseUIField: Record "Dataverse UI Field";
+            begin
+                DataverseUIField.Reset;
+                DataverseUIField.SetRange("Mapping Name", Rec."Mapping Name");
+                DataverseUIField.SetRange("BC Table", Rec."BC Table");
+                DataverseUIField.SetFilter("Dataverse Field", '<>%1', 0);
+                if not DataverseUIField.IsEmpty then
+                    Error(ErrorDataverseTable);
+
+                DataverseUIField.Reset;
+                DataverseUIField.SetRange("Mapping Name", Rec."Mapping Name");
+                DataverseUIField.SetRange("BC Table", Rec."BC Table");
+                if DataverseUIField.FindSet() then
+                    repeat
+                        DataverseUIField."Dataverse Table" := Rec."Dataverse Table";
+                        DataverseUIField.Modify(true);
+                    until DataverseUIField.Next = 0;
+            end;
         }
         field(50; "Dataverse Table Caption"; Text[100])
         {
-            CalcFormula = Lookup(AllObjWithCaption."Object Name" WHERE("Object ID" = FIELD("Dataverse Table")));
+            CalcFormula = Lookup(AllObjWithCaption."Object Name" Where("Object ID" = Field("Dataverse Table")));
             Caption = 'Dataverse Table Caption';
             FieldClass = FlowField;
         }
@@ -41,8 +62,8 @@ table 70100 "Dataverse UI Table"
         }
         field(70; "Dataverse UID Caption"; Text[100])
         {
-            CalcFormula = Lookup(Field."Field Caption" WHERE(TableNo = FIELD("Dataverse Table"),
-                                                              "No." = FIELD("Dataverse UID")));
+            CalcFormula = Lookup(Field."Field Caption" Where(TableNo = Field("Dataverse Table"),
+                                                             "No." = Field("Dataverse UID")));
             Caption = 'Dataverse UID Caption';
             FieldClass = FlowField;
         }
@@ -54,8 +75,8 @@ table 70100 "Dataverse UI Table"
         }
         field(90; "Modified Field Caption"; Text[100])
         {
-            CalcFormula = Lookup(Field."Field Caption" WHERE(TableNo = FIELD("Dataverse Table"),
-                                                              "No." = FIELD("Modified Field")));
+            CalcFormula = Lookup(Field."Field Caption" Where(TableNo = Field("Dataverse Table"),
+                                                             "No." = Field("Modified Field")));
             Caption = 'Modified Field Caption';
             FieldClass = FlowField;
         }
@@ -83,6 +104,8 @@ table 70100 "Dataverse UI Table"
             Clustered = true;
         }
     }
+    var
+        ErrorDataverseTable: Label 'You cannot change the Dataverse table because there are fields assigned.';
 
     trigger OnDelete()
     var
