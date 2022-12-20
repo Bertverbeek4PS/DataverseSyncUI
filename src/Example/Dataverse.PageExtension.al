@@ -20,7 +20,7 @@ pageextension 70100 "Employee Synch Extension" extends "Employee Card"
                     var
                         CRMIntegrationManagement: Codeunit "CRM Integration Management";
                     begin
-                        CRMIntegrationManagement.ShowCRMEntityFromRecordID(rec.RecordId);
+                        CRMIntegrationManagement.ShowCRMEntityFromRecordID(Rec.RecordId);
                     end;
                 }
                 action(CDSSynchronizeNow)
@@ -36,7 +36,7 @@ pageextension 70100 "Employee Synch Extension" extends "Employee Card"
                     var
                         CRMIntegrationManagement: Codeunit "CRM Integration Management";
                     begin
-                        CRMIntegrationManagement.UpdateOneNow(rec.RecordId);
+                        CRMIntegrationManagement.UpdateOneNow(Rec.RecordId);
                     end;
                 }
                 action(ShowLog)
@@ -51,7 +51,7 @@ pageextension 70100 "Employee Synch Extension" extends "Employee Card"
                     var
                         CRMIntegrationManagement: Codeunit "CRM Integration Management";
                     begin
-                        CRMIntegrationManagement.ShowLog(rec.RecordId);
+                        CRMIntegrationManagement.ShowLog(Rec.RecordId);
                     end;
                 }
                 group(Coupling)
@@ -72,7 +72,7 @@ pageextension 70100 "Employee Synch Extension" extends "Employee Card"
                         var
                             CRMIntegrationManagement: Codeunit "CRM Integration Management";
                         begin
-                            CRMIntegrationManagement.DefineCoupling(rec.RecordId);
+                            CRMIntegrationManagement.DefineCoupling(Rec.RecordId);
                         end;
                     }
                     action(DeleteCDSCoupling)
@@ -88,7 +88,7 @@ pageextension 70100 "Employee Synch Extension" extends "Employee Card"
                         var
                             CRMCouplingManagement: Codeunit "CRM Coupling Management";
                         begin
-                            CRMCouplingManagement.RemoveCoupling(rec.RecordId);
+                            CRMCouplingManagement.RemoveCoupling(Rec.RecordId);
                         end;
                     }
                 }
@@ -104,7 +104,7 @@ pageextension 70100 "Employee Synch Extension" extends "Employee Card"
     trigger OnAfterGetCurrRecord()
     begin
         if CDSIntegrationEnabled then
-            CDSIsCoupledToRecord := CRMCouplingManagement.IsRecordCoupledToCRM(rec.RecordId);
+            CDSIsCoupledToRecord := CRMCouplingManagement.IsRecordCoupledToCRM(Rec.RecordId);
     end;
 
     var

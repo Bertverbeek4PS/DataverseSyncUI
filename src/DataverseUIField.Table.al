@@ -18,7 +18,7 @@ table 70101 "Dataverse UI Field"
         }
         field(30; "BC Table Caption"; Text[100])
         {
-            CalcFormula = Lookup(AllObjWithCaption."Object Name" WHERE("Object ID" = FIELD("BC Table")));
+            CalcFormula = Lookup(AllObjWithCaption."Object Name" Where("Object ID" = Field("BC Table")));
             Caption = 'BC Table Caption';
             FieldClass = FlowField;
         }
@@ -38,8 +38,8 @@ table 70101 "Dataverse UI Field"
         }
         field(50; "BC Field Caption"; Text[100])
         {
-            CalcFormula = Lookup(Field."Field Caption" WHERE(TableNo = FIELD("BC Table"),
-                                                              "No." = FIELD("BC Field")));
+            CalcFormula = Lookup(Field."Field Caption" Where(TableNo = Field("BC Table"),
+                                                             "No." = Field("BC Field")));
             Caption = 'BC Field Caption';
             FieldClass = FlowField;
         }
@@ -51,7 +51,7 @@ table 70101 "Dataverse UI Field"
         }
         field(70; "Dataverse Table Caption"; Text[100])
         {
-            CalcFormula = Lookup(AllObjWithCaption."Object Name" WHERE("Object ID" = FIELD("Dataverse Table")));
+            CalcFormula = Lookup(AllObjWithCaption."Object Name" Where("Object ID" = Field("Dataverse Table")));
             Caption = 'Dataverse Table Caption';
             FieldClass = FlowField;
         }
@@ -74,8 +74,8 @@ table 70101 "Dataverse UI Field"
         }
         field(90; "Dataverse Field Caption"; Text[100])
         {
-            CalcFormula = Lookup(Field."Field Caption" WHERE(TableNo = FIELD("Dataverse Table"),
-                                                              "No." = FIELD("Dataverse Field")));
+            CalcFormula = Lookup(Field."Field Caption" Where(TableNo = Field("Dataverse Table"),
+                                                             "No." = Field("Dataverse Field")));
             Caption = 'Dataverse Field Caption';
             FieldClass = FlowField;
         }
@@ -109,7 +109,7 @@ table 70101 "Dataverse UI Field"
 
     keys
     {
-        key(Key1; "Mapping Name", "BC Table", "BC Field", "Dataverse Table", "Dataverse Field")
+        key(Key1; "Mapping Name", "BC Table", "BC Field")
         {
             Clustered = true;
         }
@@ -117,10 +117,10 @@ table 70101 "Dataverse UI Field"
 
     var
         FieldTypeNotSupportedErr: Label 'The field %1 of type %2 is not supported.', Comment = '%1 = field name, %2 = field type';
-        FieldTypeNotTheSameErr: label 'The field %1 with type %2 must be the same as type %3';
+        FieldTypeNotTheSameErr: label 'The field %1 with type %2 must be the same as type %3.';
         FieldClassNormalErr: label 'Only fields with class normal can be added.';
 
-    procedure CompareFieldType(FldBC: Record Field; FldDataverse: Record Field)
+    internal procedure CompareFieldType(FldBC: Record Field; FldDataverse: Record Field)
     begin
         if (FldBC.Type = FldBC.Type::Code) and (FldDataverse.Type = FldDataverse.Type::Text) then
             exit;
@@ -128,7 +128,7 @@ table 70101 "Dataverse UI Field"
             Error(FieldTypeNotTheSameErr, FldDataverse."Field Caption", FldDataverse.Type, FldBC.Type);
     end;
 
-    procedure CheckFieldTypeForSync(Fld: Record Field)
+    internal procedure CheckFieldTypeForSync(Fld: Record Field)
     begin
         if Fld.Class <> Fld.Class::Normal then
             Error(FieldClassNormalErr);
@@ -145,11 +145,40 @@ table 70101 "Dataverse UI Field"
             Fld.Type::Guid,
             Fld.Type::Integer,
             Fld.Type::Option,
-            Fld.Type::Text,
-            Fld.Type::Time:
+            Fld.Type::Text:
                 exit;
         end;
         Error(FieldTypeNotSupportedErr, Fld."Field Caption", Fld.Type);
     end;
 
+    [TryFunction]
+    internal procedure CanFieldBeInserted(Fld: Record Field)
+    begin
+        CheckFieldTypeForSync(Fld);
+    end;
+
+    internal procedure MapFields(MappingName: Code[20]; BCTable: Integer; DataverseTable: Integer)
+    var
+        lDataverseUIField: Record "Dataverse UI Field";
+        DataverseUIDataverseIntegr: Codeunit "Dataverse UI Dataverse Integr.";
+        Fld: Record Field;
+    begin
+        if DataverseTable = 0 then
+            exit;
+
+        lDataverseUIField.Reset;
+        lDataverseUIField.SetRange("Mapping Name", MappingName);
+        lDataverseUIField.SetRange("BC Table", BCTable);
+        if lDataverseUIField.FindSet() then
+            repeat
+                lDataverseUIField.CalcFields("BC Field Caption");
+
+                Fld.Reset;
+                Fld.SetRange(TableNo, DataverseTable);
+                Fld.SetFilter(FieldName, '%1', '*' + DataverseUIDataverseIntegr.GetDataverseCompliantName(lDataverseUIField."BC Field Caption"));
+                if Fld.FindFirst() then
+                    lDataverseUIField."Dataverse Field" := Fld."No.";
+                lDataverseUIField.Modify(true);
+            until lDataverseUIField.Next = 0;
+    end;
 }

@@ -4,24 +4,22 @@ page 70102 "Dataverse UI List"
     SourceTable = "Dataverse UI Temp Table";
     Editable = false;
     ApplicationArea = All;
-    UsageCategory = Lists;
-
     layout
     {
         area(Content)
         {
             repeater(repeaterName)
             {
-                field(Id; rec.Id)
+                field(Id; Rec.Id)
                 {
                 }
-                field(Textfield1; rec.Textfield1)
+                field(Textfield1; Rec.Textfield1)
                 {
                 }
-                field(Textfield2; rec.Textfield2)
+                field(Textfield2; Rec.Textfield2)
                 {
                 }
-                field(Textfield3; rec.Textfield3)
+                field(Textfield3; Rec.Textfield3)
                 {
                 }
             }
@@ -55,7 +53,7 @@ page 70102 "Dataverse UI List"
                     if DataverseUITable.FindFirst() then begin
                         RecRef.Open(DataverseUITable."Dataverse Table");
                         MyFieldRef := RecRef.Field(DataverseUITable."Dataverse UID");
-                        MyFieldRef.Value := gCRMId;
+                        MyFieldRef.Value := ExternalCRMId;
                         if RecRef.Find('=') then begin
                             RecID := RecRef.RecordId;
                             RecRef.Get(RecID);
@@ -72,7 +70,7 @@ page 70102 "Dataverse UI List"
         CRMTableID: Integer;
         NAVTableId: Integer;
         SavedCRMId: Guid;
-        gCRMId: Guid;
+        ExternalCRMId: Guid;
         IntTableFilter: Text;
 
     trigger OnInit()
@@ -85,7 +83,7 @@ page 70102 "Dataverse UI List"
         InsertDataverseTempRecords(CRMTableID, NAVTableId, Rec);
         Rec.SetView(IntTableFilter);
 
-        if rec.Get(gCRMId) then
+        if Rec.Get(ExternalCRMId) then
             CurrPage.SetRecord(rec);
     end;
 
@@ -105,11 +103,11 @@ page 70102 "Dataverse UI List"
                 If DataverseUIField.FindSet then
                     repeat
                         InsertValue(DataverseUITempTable, DataverseUIField."Field on CDS Page", CDSTable, DataverseUIField."Dataverse Field");
-                    Until DataverseUIField.Next = 0;
+                    until DataverseUIField.Next = 0;
                 DataverseUITable.Reset;
                 DataverseUITable.SetRange("Dataverse Table", CRMTableID);
                 If DataverseUITable.FindFirst then begin
-                    DataverseUITempTable.CRMId := CDSTable.FIELD(DataverseUITable."Dataverse UID").Value;
+                    DataverseUITempTable.CRMId := CDSTable.Field(DataverseUITable."Dataverse UID").Value;
                 end;
                 DataverseUITempTable.Insert;
             Until CDSTable.Next = 0;
@@ -118,22 +116,22 @@ page 70102 "Dataverse UI List"
     local procedure InsertValue(var DataverseUITempTable: Record "Dataverse UI Temp Table"; Fieldno: integer; CDSTable: RecordRef; CDSFieldNo: Integer);
     begin
         if DataverseUITempTable.FieldNo(id) = Fieldno then
-            DataverseUITempTable.Id := CDSTable.FIELD(CDSFieldNo).Value;
+            DataverseUITempTable.Id := CDSTable.Field(CDSFieldNo).Value;
         if DataverseUITempTable.FieldNo(Textfield1) = Fieldno then
-            DataverseUITempTable.Textfield1 := CDSTable.FIELD(CDSFieldNo).Value;
+            DataverseUITempTable.Textfield1 := CDSTable.Field(CDSFieldNo).Value;
         if DataverseUITempTable.FieldNo(Textfield2) = Fieldno then
-            DataverseUITempTable.Textfield2 := CDSTable.FIELD(CDSFieldNo).Value;
+            DataverseUITempTable.Textfield2 := CDSTable.Field(CDSFieldNo).Value;
         if DataverseUITempTable.FieldNo(Textfield3) = Fieldno then
-            DataverseUITempTable.Textfield3 := CDSTable.FIELD(CDSFieldNo).Value;
+            DataverseUITempTable.Textfield3 := CDSTable.Field(CDSFieldNo).Value;
     end;
 
 
-    procedure SetGlobalVar(lCRMTableID: Integer; lNAVTableId: Integer; lSavedCRMId: Guid; lCRMId: Guid; lIntTableFilter: Text)
+    procedure SetGlobalVar(SetCRMTableID: Integer; SetNAVTableId: Integer; SetSavedCRMId: Guid; SetCRMId: Guid; SetIntTableFilter: Text)
     begin
-        CRMTableID := lCRMTableID;
-        NAVTableId := lNAVTableId;
-        SavedCRMId := lSavedCRMId;
-        gCRMId := lCRMId;
-        IntTableFilter := lIntTableFilter;
+        CRMTableID := SetCRMTableID;
+        NAVTableId := SetNAVTableId;
+        SavedCRMId := SetSavedCRMId;
+        ExternalCRMId := SetCRMId;
+        IntTableFilter := SetIntTableFilter;
     end;
 }

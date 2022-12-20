@@ -1,150 +1,61 @@
 page 70100 "Dataverse UI Setup"
 {
-    PageType = List;
+    PageType = Card;
     ApplicationArea = All;
+    Caption = 'Dataverse UI Setup';
+    Editable = true;
     UsageCategory = Administration;
-    SourceTable = "Dataverse UI Table";
-
+    SourceTable = "Dataverse UI Setup";
     layout
     {
         area(Content)
         {
-            repeater(repeaterName)
+            group(GroupName)
             {
-                field("Mapping Name"; rec."Mapping Name")
+                field(TenantId; Rec."Tenant ID")
                 {
+                    Tooltip = 'Specifies the Tenant id for the Azure App Registration that accesses Dataverse.';
                 }
-                field("BC Table"; rec."BC Table")
+                field(ClientId; Rec."Client ID")
                 {
+                    Tooltip = 'Specifies the client id for the Azure App Registration that accesses Dataverse.';
                 }
-                field("BC Table Caption"; rec."BC Table Caption")
+                field("Client Secret"; ClientSecret)
                 {
-                }
-                field("Dataverse Table"; rec."Dataverse Table")
-                {
-                }
-                field("Dataverse Table Caption"; rec."Dataverse Table Caption")
-                {
-                }
-                field("Table Name Dataverse"; rec."Table Name Dataverse")
-                {
-                }
-                field("Sync Direction"; rec."Sync Direction")
-                {
-                }
-                field("Dataverse UID"; rec."Dataverse UID")
-                {
+                    ExtendedDatatype = Masked;
+                    Tooltip = 'Specifies the client secret for the Azure App Registration that accesses Dataverse.';
 
-                    trigger OnLookup(var Text: Text): Boolean
-                    var
-                        "Field": Record "Field";
-                        FieldSelection: Codeunit "Field Selection";
+                    trigger OnValidate()
                     begin
-                        Field.SetRange(TableNo, rec."Dataverse Table");
-                        if FieldSelection.Open(Field) then begin
-                            rec."Dataverse UID" := Field."No.";
-                        end;
+                        Rec.SetClientSecret(ClientSecret);
                     end;
                 }
-                field("Modified Field"; rec."Modified Field")
+                field(WebApiEndpoint; Rec."Web API endpoint")
                 {
+                    Tooltip = 'Specifies the Web API endpoint base url of the Dataverse Environemnt. format https://xxxx.api.crm4.dynamics.com';
+                }
+                field(VersionApi; Rec."Version API")
+                {
+                    Tooltip = 'Specifies the version of the web API of the Dataverse Environemnt. Format 9.2';
+                }
+                field(PrefixDataverse; Rec."Prefix Dataverse")
+                {
+                    Tooltip = 'Specifies the prefix in Dataverse for table and fields. Format xxx';
+                }
 
-                    trigger OnLookup(var Text: Text): Boolean
-                    var
-                        "Field": Record "Field";
-                        FieldSelection: Codeunit "Field Selection";
-                    begin
-                        Field.SetRange(TableNo, rec."Dataverse Table");
-                        if FieldSelection.Open(Field) then begin
-                            rec."Modified Field" := Field."No.";
-                        end;
-                    end;
-                }
-                field("Sync Only Coupled Records"; rec."Sync Only Coupled Records")
-                {
-                }
+            }
+            part(Tables; "Dataverse UI Tables")
+            {
+                ApplicationArea = All;
+                UpdatePropagation = Both;
             }
         }
     }
 
     actions
     {
-        area(Processing)
-        {
-            action(ResetConfiguration)
-            {
-                ApplicationArea = Suite;
-                Caption = 'Use Default Synchronization Setup';
-                Image = ResetStatus;
-                ToolTip = 'Resets the integration table mappings and synchronization jobs to the default values for a connection with Dataverse. All current mappings are deleted.', Comment = 'Dataverse is the name of a Microsoft Service and should not be translated.';
-
-                trigger OnAction()
-                var
-                    CDSSetupDefaults: Codeunit "CDS Setup Defaults";
-                    CDSConnectionSetup: Record "CDS Connection Setup";
-                begin
-                    if Confirm(ResetIntegrationTableMappingConfirmQst, false) then begin
-                        if CDSConnectionSetup.Get() then begin
-                            CDSSetupDefaults.ResetConfiguration(CDSConnectionSetup);
-                            Message(SetupSuccessfulMsg);
-                        end;
-                    end;
-                end;
-            }
-            action(CreateTableMapping)
-            {
-                ApplicationArea = Suite;
-                Caption = 'Create Integration Table Mapping';
-                Image = Insert;
-                ToolTip = 'Creates the Integration Table Mapping for the selected record.';
-
-                trigger OnAction()
-                var
-                    DataverseUIEvents: Codeunit "Dataverse UI Events";
-                    IntegrationTableMapping: Record "Integration Table Mapping";
-                begin
-                    //Delete IntegrationFieldMapping
-                    IntegrationTableMapping.Reset;
-                    IntegrationTableMapping.SetRange(Name, Rec."Mapping Name");
-                    if not IntegrationTableMapping.IsEmpty then
-                        IntegrationTableMapping.Delete(true);
-
-                    DataverseUIEvents.InsertIntegrationMapping(Rec."Mapping Name");
-                    Message(CreateTableMappingMsg);
-                end;
-            }
-            action(CreateJobQueue)
-            {
-                ApplicationArea = Suite;
-                Caption = 'Create Job Queue';
-                Image = Insert;
-                ToolTip = 'Creates a Job Queue of the selected entry';
-
-                trigger OnAction()
-                var
-                    CDSSetupDefaults: Codeunit "CDS Setup Defaults";
-                    IntegrationTableMapping: Record "Integration Table Mapping";
-                    JobQueueEntryNameTok: Label ' %1 - %2 synchronization job.', Comment = '%1 = The Integration Table Name to synchronized (ex. CUSTOMER), %2 = CRM product name';
-                begin
-                    IntegrationTableMapping.Reset;
-                    IntegrationTableMapping.SetRange(Name, Rec."Mapping Name");
-                    If IntegrationTableMapping.FindFirst() then
-                        Rec.CreateJobQueueEntry(IntegrationTableMapping, Codeunit::"Integration Synch. Job Runner", StrSubstNo(JobQueueEntryNameTok, IntegrationTableMapping.GetTempDescription()));
-
-                    Message(CreateJobQueue);
-                end;
-            }
-        }
         area(Navigation)
         {
-            action(Fields)
-            {
-                ApplicationArea = All;
-                Caption = 'Fields';
-                RunObject = Page "Dataverse UI Fields";
-                Image = SelectField;
-                RunPageLink = "Mapping Name" = field("Mapping Name"), "BC Table" = field("BC Table"), "Dataverse Table" = field("Dataverse Table");
-            }
             action(IntegrationTableMapping)
             {
                 ApplicationArea = All;
@@ -155,9 +66,18 @@ page 70100 "Dataverse UI Setup"
         }
     }
     var
-        ResetIntegrationTableMappingConfirmQst: Label 'This will restore the default integration table mappings and synchronization jobs for Dataverse. All customizations to mappings and jobs will be deleted. The default mappings and jobs will be used the next time data is synchronized. Do you want to continue?';
-        SetupSuccessfulMsg: Label 'The default setup for Dataverse synchronization has completed successfully.';
-        CreateTableMappingMsg: Label 'The Integration Table Mapping is succesfully created.';
-        CreateJobQueue: Label 'The Job Queue is succesfully created.';
+        [NonDebuggable]
+        ClientSecret: Text;
 
+    trigger OnOpenPage()
+    begin
+        if not Rec.Get() then begin
+            Rec.Init();
+            Rec."Web API endpoint" := 'https://xxxx.api.crm4.dynamics.com';
+            Rec."Version API" := '9.2';
+            Rec.Insert();
+        end else begin
+            ClientSecret := Rec.GetClientSecret();
+        end;
+    end;
 }
