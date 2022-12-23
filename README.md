@@ -19,3 +19,5 @@ Pull Request | Changes
 [Blog post about table mapping](https://www.bertverbeek.nl/blog/2022/07/05/sync-your-bc-data-to-dataverse-with-less-code/)
 
 [Blog post about Dataverse Web API feature](https://www.bertverbeek.nl/blog/2022/12/20/create-dataverse-tables-from-bc/)
+
+[Video about how it all works](https://youtu.be/Ys26GFhgwT8)
