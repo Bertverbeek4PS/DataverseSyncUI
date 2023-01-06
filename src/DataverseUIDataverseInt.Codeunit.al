@@ -49,46 +49,28 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
     [NonDebuggable]
     local procedure GetAccessToken(): Text
     var
-        Client: HttpClient;
-        RequestMessage: HttpRequestMessage;
-        ResponseMessage: HttpResponseMessage;
-        JsonContent: Text;
-        Content: HttpContent;
-        ContentHeaders: HttpHeaders;
-        [NonDebuggable]
-        ATJsonToken: JsonToken;
-        [NonDebuggable]
-        JsonResponse: JsonObject;
         [NonDebuggable]
         AccessToken: Text;
         DataverseUISetup: Record "Dataverse UI Setup";
         Uri: Label 'https://login.microsoftonline.com/%1/oauth2/token', Locked = true;
-        BodyText: Label 'grant_type=client_credentials&client_id=%1&client_secret=%2&resource=%3', Locked = true;
-        Body: Text;
+        Scope: List of [Text];
+        Oauth2: Codeunit OAuth2;
+        RedirectUrl: Text;
     begin
         if DataverseUISetup.Get() then;
 
-        RequestMessage.Method('POST');
-        RequestMessage.SetRequestUri(StrSubstNo(uri, DataverseUISetup."Tenant ID"));
-        Body := StrSubstNo(BodyText, DataverseUISetup."Client ID", DataverseUISetup.GetClientSecret(), DataverseUISetup."Web API endpoint");
+        Oauth2.GetDefaultRedirectURL(RedirectURL);
+        Scope.Add(DataverseUISetup."Web API endpoint" + '/.default');
 
-        Content.WriteFrom(StrSubstNo(BodyText, DataverseUISetup."Client ID", DataverseUISetup.GetClientSecret(), DataverseUISetup."Web API endpoint"));
-        Content.GetHeaders(ContentHeaders);
-        ContentHeaders.Remove('Content-Type');
-        ContentHeaders.Add('Content-Type', 'application/x-www-form-urlencoded');
-        RequestMessage.Content(Content);
-        if Client.Send(RequestMessage, ResponseMessage) then begin
-            if ResponseMessage.HttpStatusCode = 200 then begin
-                ResponseMessage.Content.ReadAs(JsonContent);
-                JsonResponse.ReadFrom(JsonContent);
+        Oauth2.AcquireTokenWithClientCredentials(DataverseUISetup."Client ID",
+                                            DataverseUISetup.GetClientSecret(),
+                                            StrSubstNo(uri, DataverseUISetup."Tenant ID") + '?resource=' + DataverseUISetup."Web API endpoint",
+                                            RedirectURL,
+                                            Scope,
+                                            AccessToken
 
-                if JsonResponse.Get('access_token', ATJsonToken) then
-                    AccessToken := ATJsonToken.AsValue().AsText();
-
-                exit(AccessToken);
-            end;
-        end else
-            Error(ResponseMessage.ReasonPhrase);
+        );
+        exit(AccessToken);
     end;
 
     local procedure CreateTableJson(DataverseUITable: Record "Dataverse UI Table"): JsonObject

@@ -8,6 +8,7 @@ Please if you have any ideas contribute to it if you have any ideas.
 
 Pull Request | Changes
 --------------- | ---
+[6](https://github.com/Bertverbeek4PS/DataverseSyncUI/issues/6) | Implemented the Oauth2 module.
 [3](https://github.com/Bertverbeek4PS/DataverseSyncUI/pull/3) | Added functionality to create Dataverse table through API.
 [2](https://github.com/Bertverbeek4PS/DataverseSyncUI/pull/2) | Better naming conventions.
 20221213 | Added feature to remove deleted records in BC and in Dataverse.
