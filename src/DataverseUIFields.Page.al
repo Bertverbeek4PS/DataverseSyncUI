@@ -75,6 +75,10 @@ page 70101 "Dataverse UI Fields"
                 {
                     ApplicationArea = All;
                 }
+                field("Dataverse Field Added"; Rec."Dataverse Field Added")
+                {
+                    ApplicationArea = All;
+                }
                 field("Sync Direction"; Rec."Sync Direction")
                 {
                     ApplicationArea = All;
@@ -170,6 +174,23 @@ page 70101 "Dataverse UI Fields"
                 trigger OnAction()
                 begin
                     Rec.MapFields(Rec."Mapping Name", Rec."BC Table", Rec."Dataverse Table");
+                end;
+            }
+            action(CreateField)
+            {
+                Caption = 'Create Fields';
+                ApplicationArea = All;
+                ToolTip = 'Create the not added field(s) in Dataverse';
+                Image = Create;
+
+                trigger OnAction()
+                var
+                    DataverseUIDataverseIntegr: Codeunit "Dataverse UI Dataverse Integr.";
+                    DataverseUITable: Record "Dataverse UI Table";
+                begin
+                    if DataverseUITable.Get(rec."Mapping Name") then;
+                    DataverseUIDataverseIntegr.CreateTable(DataverseUITable, true);
+                    CurrPage.Update();
                 end;
             }
         }

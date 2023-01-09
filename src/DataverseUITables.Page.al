@@ -128,7 +128,21 @@ page 70103 "Dataverse UI Tables"
                 var
                     DataverseUIDataverseIntegr: Codeunit "Dataverse UI Dataverse Integr.";
                 begin
-                    DataverseUIDataverseIntegr.CreateTable(rec);
+                    DataverseUIDataverseIntegr.CreateTable(rec, false);
+                    CurrPage.Update();
+                end;
+            }
+            action(UpdateDataverseTable)
+            {
+                Caption = 'Update Dataverse Table';
+                Image = Insert;
+                ToolTip = 'Updates a Dataverse table inside Dataverse';
+
+                trigger OnAction()
+                var
+                    DataverseUIDataverseIntegr: Codeunit "Dataverse UI Dataverse Integr.";
+                begin
+                    DataverseUIDataverseIntegr.CreateTable(rec, true);
                 end;
             }
             action(CreateJobQueue)

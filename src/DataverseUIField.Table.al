@@ -105,6 +105,16 @@ table 70101 "Dataverse UI Field"
             TableRelation = Field where(TableNo = const(70105));
             Caption = 'Field on CDS Page';
         }
+        field(150; "Dataverse Field Added"; Boolean)
+        {
+            DataClassification = ToBeClassified;
+            Caption = 'Dataverse Field Added';
+
+            trigger OnValidate()
+            begin
+                //Confirm()
+            end;
+        }
     }
 
     keys
