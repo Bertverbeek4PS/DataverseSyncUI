@@ -99,50 +99,50 @@ page 70103 "Dataverse UI Tables"
             }
             action(CreateTableMapping)
             {
-                Caption = 'Create Integration Table Mapping';
+                Caption = 'Create/Update Integration Table Mapping';
                 Image = Insert;
-                ToolTip = 'Creates the Integration Table Mapping for the selected record.';
+                ToolTip = 'Creates or updates the Integration Table Mapping for the selected record.';
 
                 trigger OnAction()
                 var
                     DataverseUIEvents: Codeunit "Dataverse UI Events";
                     IntegrationTableMapping: Record "Integration Table Mapping";
                 begin
-                    //Delete IntegrationFieldMapping
-                    IntegrationTableMapping.Reset;
-                    IntegrationTableMapping.SetRange(Name, Rec."Mapping Name");
-                    if not IntegrationTableMapping.IsEmpty then
-                        IntegrationTableMapping.Delete(true);
+                    if rec."Dataverse Table" <> 0 then begin
+                        //Delete IntegrationFieldMapping
+                        IntegrationTableMapping.Reset;
+                        IntegrationTableMapping.SetRange(Name, Rec."Mapping Name");
+                        if not IntegrationTableMapping.IsEmpty then begin
+                            AnswerUpdate := Confirm(UpdateOrCreate, true);
+                            if AnswerUpdate then begin
+                                DataverseUIEvents.InsertIntegrationMapping(Rec."Mapping Name", true);
+                                Message(UpdateTableMappingMsg);
+                            end else begin
+                                IntegrationTableMapping.Delete(true);
+                                DataverseUIEvents.InsertIntegrationMapping(Rec."Mapping Name", false);
+                                Message(CreateTableMappingMsg);
+                            end;
+                        end else begin
+                            DataverseUIEvents.InsertIntegrationMapping(Rec."Mapping Name", false);
+                            Message(CreateTableMappingMsg);
+                        end;
+                    end else
+                        Message(CreateTableMappingErrorMsg);
 
-                    DataverseUIEvents.InsertIntegrationMapping(Rec."Mapping Name");
-                    Message(CreateTableMappingMsg);
                 end;
             }
             action(CreateDataverseTable)
             {
-                Caption = 'Create Dataverse Table';
+                Caption = 'Create/Update Dataverse Table';
                 Image = Insert;
-                ToolTip = 'Creates a Dataverse table inside Dataverse';
+                ToolTip = 'Creates or updates a Dataverse table inside Dataverse';
 
                 trigger OnAction()
                 var
                     DataverseUIDataverseIntegr: Codeunit "Dataverse UI Dataverse Integr.";
                 begin
-                    DataverseUIDataverseIntegr.CreateTable(rec, false);
+                    DataverseUIDataverseIntegr.CreateTable(rec);
                     CurrPage.Update();
-                end;
-            }
-            action(UpdateDataverseTable)
-            {
-                Caption = 'Update Dataverse Table';
-                Image = Insert;
-                ToolTip = 'Updates a Dataverse table inside Dataverse';
-
-                trigger OnAction()
-                var
-                    DataverseUIDataverseIntegr: Codeunit "Dataverse UI Dataverse Integr.";
-                begin
-                    DataverseUIDataverseIntegr.CreateTable(rec, true);
                 end;
             }
             action(CreateJobQueue)
@@ -168,9 +168,12 @@ page 70103 "Dataverse UI Tables"
         }
     }
     var
+        AnswerUpdate: Boolean;
+        UpdateOrCreate: Label 'Do you want to update the Integration Table Mapping?';
         ResetIntegrationTableMappingConfirmQst: Label 'This will restore the default integration table mappings and synchronization jobs for Dataverse. All customizations to mappings and jobs will be deleted. The default mappings and jobs will be used the next time data is synchronized. Do you want to continue?';
         SetupSuccessfulMsg: Label 'The default setup for Dataverse synchronization has completed successfully.';
         CreateTableMappingMsg: Label 'The Integration Table Mapping is succesfully created.';
+        UpdateTableMappingMsg: Label 'The Integration Table Mapping is succesfully updated.';
         CreateJobQueue: Label 'The Job Queue is succesfully created.';
-
+        CreateTableMappingErrorMsg: Label 'The Integration Table Mapping could not be created.';
 }

@@ -5,21 +5,13 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
 
     end;
 
-    internal procedure CreateTable(DataverseUITable: Record "Dataverse UI Table"; UpdateTable: Boolean)
+    internal procedure CreateTable(DataverseUITable: Record "Dataverse UI Table")
     var
-        Client: HttpClient;
-        RequestMessage: HttpRequestMessage;
         ResponseMessage: HttpResponseMessage;
-        Content: HttpContent;
-        ContentHeaders: HttpHeaders;
         JsonBody: JsonObject;
         Body: Text;
         EntityId: Text;
-        [NonDebuggable]
-        AccessToken: Text;
         DataverseUISetup: Record "Dataverse UI Setup";
-        UriCreate: Label '%1/api/data/v%2/EntityDefinitions', Locked = true;
-        UriUpdate: Label '%1/api/data/v%2/EntityDefinitions(%3)/Attributes', Locked = true;
         Tablecreated: Label 'Table %1 is created in Dataverse';
         Tableupdated: Label 'Table %1 is updated in Dataverse. %2';
         FieldUpdateFFailed: Label 'But some field(s) are failed. Please look in the fields page.';
@@ -27,46 +19,29 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         DataverseUIField2: Record "Dataverse UI Field";
         ErrorField: Boolean;
     begin
-        AccessToken := GetAccessToken();
 
         if DataverseUISetup.Get() then;
 
-        RequestMessage.Method('POST');
-        if UpdateTable then begin
-            EntityId := GetEntityIdDataverse(DataverseUITable);
-            RequestMessage.SetRequestUri(StrSubstNo(UriUpdate, DataverseUISetup."Web API endpoint", DataverseUISetup."Version API", EntityId));
-        end else begin
-            RequestMessage.SetRequestUri(StrSubstNo(UriCreate, DataverseUISetup."Web API endpoint", DataverseUISetup."Version API"));
-        end;
+        DataverseUIField.Reset;
+        DataverseUIField.SetRange("BC Table", DataverseUITable."BC Table");
+        DataverseUIField.SetRange("Dataverse Field Added", false);
 
-        if UpdateTable then begin
+        if DataverseUITable."Dataverse Table" <> 0 then begin
             ErrorField := false;
-
-            DataverseUIField.Reset;
-            DataverseUIField.SetRange("BC Table", DataverseUITable."BC Table");
-            DataverseUIField.SetRange("Dataverse Field Added", false);
+            EntityId := GetEntityIdDataverse(DataverseUITable);
 
             if DataverseUIField.FindSet() then
                 repeat
                     //For each field it must be a seperate call
-                    Client.Clear();
-                    Client.DefaultRequestHeaders().Add('Authorization', StrSubstNo('Bearer %1', AccessToken));
-                    Client.DefaultRequestHeaders().Add('Accept', 'application/json');
-                    Content.Clear();
+                    Clear(ResponseMessage);
                     JsonBody := CreateFieldJson(DataverseUIField."BC Table", DataverseUIField."BC Field");
                     JsonBody.WriteTo(Body);
-                    Content.WriteFrom(body);
-                    Content.GetHeaders(ContentHeaders);
-                    ContentHeaders.Remove('Content-Type');
-                    ContentHeaders.Add('Content-Type', 'application/json');
-                    RequestMessage.Content(Content);
+                    ResponseMessage := SendHttpRequest(Body, EntityId, true);
 
-                    if Client.Send(RequestMessage, ResponseMessage) then begin
-                        if ResponseMessage.HttpStatusCode = 204 then begin
-                            DataverseUIField2.Get(DataverseUIField."Mapping Name", DataverseUIField."BC Table", DataverseUIField."BC Field");
-                            DataverseUIField2."Dataverse Field Added" := true;
-                            DataverseUIField2.Modify(true);
-                        end;
+                    if ResponseMessage.HttpStatusCode = 204 then begin
+                        DataverseUIField2.Get(DataverseUIField."Mapping Name", DataverseUIField."BC Table", DataverseUIField."BC Field");
+                        DataverseUIField2."Dataverse Field Added" := true;
+                        DataverseUIField2.Modify(true);
                     end else
                         ErrorField := true;
 
@@ -78,34 +53,72 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
                 Message(StrSubstNo(Tableupdated, DataverseUITable."BC Table Caption", ''))
 
         end else begin
+            Clear(ResponseMessage);
+
             JsonBody := CreateTableJson(DataverseUITable, DataverseUIField);
-
             JsonBody.WriteTo(Body);
-            Content.WriteFrom(body);
-            Content.GetHeaders(ContentHeaders);
-            ContentHeaders.Remove('Content-Type');
-            ContentHeaders.Add('Content-Type', 'application/json');
-            RequestMessage.Content(Content);
+            message(body);
+            ResponseMessage := SendHttpRequest(Body, '', false);
 
-            Client.DefaultRequestHeaders().Add('Authorization', StrSubstNo('Bearer %1', AccessToken));
-            Client.DefaultRequestHeaders().Add('Accept', 'application/json');
-
-            if Client.Send(RequestMessage, ResponseMessage) then begin
-                if ResponseMessage.HttpStatusCode = 204 then begin
-                    if DataverseUITable."Table Name Dataverse" = '' then begin
-                        DataverseUITable."Table Name Dataverse" := text.LowerCase(StrSubstNo('%1_%2',
-                DataverseUISetup."Prefix Dataverse", GetDataverseCompliantName(DataverseUITable."BC Table Caption")));
-                        DataverseUITable.Modify(true);
-                    end;
-                    DataverseUIField.ModifyAll("Dataverse Field Added", true); //Modify if everything is successfull
-
-                    Message(StrSubstNo(tablecreated, DataverseUITable."BC Table Caption"));
+            if ResponseMessage.HttpStatusCode = 204 then begin
+                if DataverseUITable."Table Name Dataverse" = '' then begin
+                    DataverseUITable."Table Name Dataverse" := text.LowerCase(StrSubstNo('%1_%2',
+                        DataverseUISetup."Prefix Dataverse", GetDataverseCompliantName(DataverseUITable."BC Table Caption")));
+                    DataverseUITable.Modify(true);
                 end;
-            end;
+                DataverseUIField.ModifyAll("Dataverse Field Added", true); //Modify if everything is successfull
+
+                Message(StrSubstNo(tablecreated, DataverseUITable."BC Table Caption"));
+            end else
+                Message(ResponseMessage.ReasonPhrase);
         end;
     end;
 
-    internal procedure GetEntityIdDataverse(DataverseUITable: Record "Dataverse UI Table"): Text
+    local procedure SendHttpRequest(Body: Text; EntityId: Text; Update: Boolean): HttpResponseMessage
+    var
+        Client: HttpClient;
+        RequestMessage: HttpRequestMessage;
+        ResponseMessage: HttpResponseMessage;
+        Content: HttpContent;
+        ContentHeaders: HttpHeaders;
+        [NonDebuggable]
+        AccessToken: Text;
+        DataverseUISetup: Record "Dataverse UI Setup";
+        UriCreate: Label '%1/api/data/v%2/EntityDefinitions', Locked = true;
+        UriUpdate: Label '%1/api/data/v%2/EntityDefinitions(%3)/Attributes', Locked = true;
+    begin
+        Clear(RequestMessage);
+        Client.Clear();
+        Content.Clear();
+        ContentHeaders.Clear();
+        Clear(ResponseMessage);
+
+        if DataverseUISetup.Get() then;
+
+        AccessToken := GetAccessToken();
+
+        RequestMessage.Method('POST');
+        if Update then
+            RequestMessage.SetRequestUri(StrSubstNo(UriUpdate, DataverseUISetup."Web API endpoint", DataverseUISetup."Version API", EntityId))
+        else
+            RequestMessage.SetRequestUri(StrSubstNo(UriCreate, DataverseUISetup."Web API endpoint", DataverseUISetup."Version API"));
+
+        Client.DefaultRequestHeaders().Add('Authorization', StrSubstNo('Bearer %1', AccessToken));
+        Client.DefaultRequestHeaders().Add('Accept', 'application/json');
+
+        Content.WriteFrom(body);
+        Content.GetHeaders(ContentHeaders);
+        ContentHeaders.Remove('Content-Type');
+        ContentHeaders.Add('Content-Type', 'application/json');
+        RequestMessage.Content(Content);
+
+        if Client.Send(RequestMessage, ResponseMessage) then begin
+            exit(ResponseMessage);
+        end;
+
+    end;
+
+    local procedure GetEntityIdDataverse(DataverseUITable: Record "Dataverse UI Table"): Text
     var
         Client: HttpClient;
         RequestMessage: HttpRequestMessage;

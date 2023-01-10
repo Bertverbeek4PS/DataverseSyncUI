@@ -1,6 +1,6 @@
 codeunit 70100 "Dataverse UI Events"
 {
-    internal procedure InsertIntegrationMapping(IntegrationTableMappingName: Code[20])
+    internal procedure InsertIntegrationMapping(IntegrationTableMappingName: Code[20]; Update: Boolean)
     var
         IntegrationTableMapping: Record "Integration Table Mapping";
         IntegrationFieldMapping: Record "Integration Field Mapping";
@@ -9,18 +9,25 @@ codeunit 70100 "Dataverse UI Events"
     begin
         DataverseUITable.SetRange("Mapping Name", IntegrationTableMappingName);
         if DataverseUITable.FindFirst() then begin
-            InsertIntegrationTableMapping(
-                IntegrationTableMapping, DataverseUITable."Mapping Name",
-                DataverseUITable."BC Table", DataverseUITable."Dataverse Table",
-                DataverseUITable."Dataverse UID", DataverseUITable."Modified Field",
-                '', '', DataverseUITable."Sync Only Coupled Records",
-                DataverseUITable."Sync Direction".AsInteger());
+            if not Update then begin
+                InsertIntegrationTableMapping(
+                    IntegrationTableMapping, DataverseUITable."Mapping Name",
+                    DataverseUITable."BC Table", DataverseUITable."Dataverse Table",
+                    DataverseUITable."Dataverse UID", DataverseUITable."Modified Field",
+                    '', '', DataverseUITable."Sync Only Coupled Records",
+                    DataverseUITable."Sync Direction".AsInteger());
+            end;
             //fields
             DataverseUIField.Reset;
             DataverseUIField.SetRange("Mapping Name", IntegrationTableMappingName);
             if DataverseUIField.FindSet then
                 repeat
-                    InsertIntegrationFieldMapping(
+                    if Update then begin
+                        IntegrationFieldMapping.Reset;
+                        IntegrationFieldMapping.SetRange("Integration Table Mapping Name", DataverseUIField."Mapping Name");
+                        IntegrationFieldMapping.SetRange("Field No.", DataverseUIField."BC Field");
+                        if not IntegrationFieldMapping.FindFirst then begin
+                            InsertIntegrationFieldMapping(
                         DataverseUIField."Mapping Name",
                         DataverseUIField."BC Field",
                         DataverseUIField."Dataverse Field",
@@ -28,6 +35,17 @@ codeunit 70100 "Dataverse UI Events"
                         DataverseUIField."Const Value",
                         DataverseUIField."Validate Field",
                         DataverseUIField."Validate Integr Table Field");
+                        end;
+                    end else begin
+                        InsertIntegrationFieldMapping(
+                            DataverseUIField."Mapping Name",
+                            DataverseUIField."BC Field",
+                            DataverseUIField."Dataverse Field",
+                            DataverseUIField."Sync Direction".AsInteger(),
+                            DataverseUIField."Const Value",
+                            DataverseUIField."Validate Field",
+                            DataverseUIField."Validate Integr Table Field");
+                    end;
                 until DataverseUIField.Next = 0;
         end;
     end;
@@ -100,7 +118,7 @@ codeunit 70100 "Dataverse UI Events"
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"CRM Integration Management", 'OnBeforeHandleCustomIntegrationTableMapping', '', false, false)]
     local procedure HandleCustomIntegrationTableMappingReset(var IsHandled: Boolean; IntegrationTableMappingName: Code[20])
     begin
-        InsertIntegrationMapping(IntegrationTableMappingName);
+        InsertIntegrationMapping(IntegrationTableMappingName, false);
         IsHandled := true;
     end;
 

@@ -78,6 +78,14 @@ page 70101 "Dataverse UI Fields"
                 field("Dataverse Field Added"; Rec."Dataverse Field Added")
                 {
                     ApplicationArea = All;
+
+                    trigger OnValidate()
+                    begin
+                        if xrec."Dataverse Field Added" = true then begin
+                            if not Confirm(DataverseFieldAddedQst, false) then
+                                rec."Dataverse Field Added" := true;
+                        end;
+                    end;
                 }
                 field("Sync Direction"; Rec."Sync Direction")
                 {
@@ -114,7 +122,6 @@ page 70101 "Dataverse UI Fields"
             }
         }
     }
-
     actions
     {
         area(Processing)
@@ -181,7 +188,7 @@ page 70101 "Dataverse UI Fields"
                 Caption = 'Create Fields';
                 ApplicationArea = All;
                 ToolTip = 'Create the not added field(s) in Dataverse';
-                Image = Create;
+                Image = Insert;
 
                 trigger OnAction()
                 var
@@ -189,7 +196,7 @@ page 70101 "Dataverse UI Fields"
                     DataverseUITable: Record "Dataverse UI Table";
                 begin
                     if DataverseUITable.Get(rec."Mapping Name") then;
-                    DataverseUIDataverseIntegr.CreateTable(DataverseUITable, true);
+                    DataverseUIDataverseIntegr.CreateTable(DataverseUITable);
                     CurrPage.Update();
                 end;
             }
@@ -197,4 +204,5 @@ page 70101 "Dataverse UI Fields"
     }
     var
         SomeFieldsCouldNotBeEnabledMsg: Label 'One or more fields could not be inserted.';
+        DataverseFieldAddedQst: Label 'Do you really want to change the setting?';
 }
