@@ -31,7 +31,10 @@ table 70101 "Dataverse UI Field"
             trigger OnValidate()
             var
                 Fld: Record Field;
+                DataverseUITable: Record "Dataverse UI Table";
             begin
+                DataverseUITable.Get("Mapping Name");
+                rec."Dataverse Table" := DataverseUITable."Dataverse Table";
                 Fld.Get(Rec."BC Table", Rec."BC Field");
                 CheckFieldTypeForSync(Fld);
             end;
@@ -70,6 +73,8 @@ table 70101 "Dataverse UI Field"
                 FldDataverse.Get(Rec."Dataverse Table", Rec."Dataverse Field");
 
                 CompareFieldType(FldBC, FldDataverse);
+
+                rec."Dataverse Field Added" := true;
             end;
         }
         field(90; "Dataverse Field Caption"; Text[100])
@@ -104,6 +109,11 @@ table 70101 "Dataverse UI Field"
             DataClassification = ToBeClassified;
             TableRelation = Field where(TableNo = const(70105));
             Caption = 'Field on CDS Page';
+        }
+        field(150; "Dataverse Field Added"; Boolean)
+        {
+            DataClassification = ToBeClassified;
+            Caption = 'Dataverse Field Added';
         }
     }
 
