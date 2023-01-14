@@ -75,6 +75,33 @@ page 70101 "Dataverse UI Fields"
                 {
                     ApplicationArea = All;
                 }
+                field("Dataverse Lookup Table"; Rec."Dataverse Lookup Table")
+                {
+                    ApplicationArea = All;
+                }
+                field("Dataverse Lookup Table Caption"; Rec."Dataverse Lookup Table Caption")
+                {
+                    ApplicationArea = All;
+                }
+                field("Dataverse Lookup Field"; Rec."Dataverse Lookup Field")
+                {
+                    ApplicationArea = All;
+
+                    trigger OnLookup(var Text: Text): Boolean
+                    var
+                        Fld: Record "Field";
+                        FieldSelection: Codeunit "Field Selection";
+                    begin
+                        Fld.SetRange(TableNo, Rec."Dataverse Lookup Table");
+                        if FieldSelection.Open(Fld) then begin
+                            Rec.Validate("Dataverse Lookup Field", Fld."No.");
+                        end;
+                    end;
+                }
+                field("Dataverse Lookup Field Caption"; Rec."Dataverse Lookup Field Caption")
+                {
+                    ApplicationArea = All;
+                }
                 field("Dataverse Field Added"; Rec."Dataverse Field Added")
                 {
                     ApplicationArea = All;
