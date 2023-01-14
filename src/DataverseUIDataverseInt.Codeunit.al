@@ -90,6 +90,8 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
                         end;
                     until DataverseUIField.Next = 0;
 
+                DataverseUIField.Reset;
+                DataverseUIField.SetRange("BC Table", DataverseUITable."BC Table");
                 DataverseUIField.ModifyAll("Dataverse Field Added", true); //Modify if everything is successfull
 
                 Message(StrSubstNo(tablecreated, DataverseUITable."BC Table Caption"));
@@ -108,6 +110,7 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         [NonDebuggable]
         AccessToken: Text;
         DataverseUISetup: Record "Dataverse UI Setup";
+        CDSConnectionSetup: Record "CDS Connection Setup";
         UriCreate: Label '%1/api/data/v%2/EntityDefinitions', Locked = true;
         UriUpdate: Label '%1/api/data/v%2/EntityDefinitions(%3)/Attributes', Locked = true;
         CreateLookup: Label '%1/api/data/v%2/RelationshipDefinitions', Locked = true;
@@ -119,16 +122,17 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         Clear(ResponseMessage);
 
         if DataverseUISetup.Get() then;
+        if CDSConnectionSetup.Get() then;
 
         AccessToken := GetAccessToken();
 
         RequestMessage.Method('POST');
         if Update and not LookupField then
-            RequestMessage.SetRequestUri(StrSubstNo(UriUpdate, DataverseUISetup."Web API endpoint", DataverseUISetup."Version API", EntityId));
+            RequestMessage.SetRequestUri(StrSubstNo(UriUpdate, CDSConnectionSetup."Server Address", DataverseUISetup."Version API", EntityId));
         if not Update and not LookupField then
-            RequestMessage.SetRequestUri(StrSubstNo(UriCreate, DataverseUISetup."Web API endpoint", DataverseUISetup."Version API"));
+            RequestMessage.SetRequestUri(StrSubstNo(UriCreate, CDSConnectionSetup."Server Address", DataverseUISetup."Version API"));
         if LookupField then
-            RequestMessage.SetRequestUri(StrSubstNo(CreateLookup, DataverseUISetup."Web API endpoint", DataverseUISetup."Version API"));
+            RequestMessage.SetRequestUri(StrSubstNo(CreateLookup, CDSConnectionSetup."Server Address", DataverseUISetup."Version API"));
 
         Client.DefaultRequestHeaders().Add('Authorization', StrSubstNo('Bearer %1', AccessToken));
         Client.DefaultRequestHeaders().Add('Accept', 'application/json');
@@ -157,6 +161,7 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         [NonDebuggable]
         AccessToken: Text;
         DataverseUISetup: Record "Dataverse UI Setup";
+        CDSConnectionSetup: Record "CDS Connection Setup";
         Uri: Label '%1/api/data/v%2/entities?$filter=logicalname%20eq%20''%3''&$select=entityid', Locked = true;
         TableNotFound: Label 'Dataverse table with name %1 is not found.';
         EnitiyLabelNotFound: Label 'Entitylabel in response is not found.';
@@ -164,10 +169,11 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         AccessToken := GetAccessToken();
 
         if DataverseUISetup.Get() then;
+        if CDSConnectionSetup.Get() then;
 
         //Get entityID
         RequestMessage.Method('GET');
-        RequestMessage.SetRequestUri(StrSubstNo(uri, DataverseUISetup."Web API endpoint", DataverseUISetup."Version API", DataverseUITable."Table Name Dataverse"));
+        RequestMessage.SetRequestUri(StrSubstNo(uri, CDSConnectionSetup."Server Address", DataverseUISetup."Version API", DataverseUITable."Table Name Dataverse"));
         Client.DefaultRequestHeaders().Add('Authorization', StrSubstNo('Bearer %1', AccessToken));
         Client.DefaultRequestHeaders().Add('Accept', 'application/json');
         if Client.Send(RequestMessage, ResponseMessage) then begin
@@ -191,19 +197,21 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         [NonDebuggable]
         AccessToken: Text;
         DataverseUISetup: Record "Dataverse UI Setup";
+        CDSConnectionSetup: Record "CDS Connection Setup";
         Uri: Label 'https://login.microsoftonline.com/%1/oauth2/token', Locked = true;
         Scope: List of [Text];
         Oauth2: Codeunit OAuth2;
         RedirectUrl: Text;
     begin
         if DataverseUISetup.Get() then;
+        if CDSConnectionSetup.Get() then;
 
         Oauth2.GetDefaultRedirectURL(RedirectURL);
-        Scope.Add(DataverseUISetup."Web API endpoint" + '/.default');
+        Scope.Add(CDSConnectionSetup."Server Address" + '/.default');
 
         Oauth2.AcquireTokenWithClientCredentials(DataverseUISetup."Client ID",
                                             DataverseUISetup.GetClientSecret(),
-                                            StrSubstNo(uri, DataverseUISetup."Tenant ID") + '?resource=' + DataverseUISetup."Web API endpoint",
+                                            StrSubstNo(uri, DataverseUISetup."Tenant ID") + '?resource=' + CDSConnectionSetup."Server Address",
                                             RedirectURL,
                                             Scope,
                                             AccessToken

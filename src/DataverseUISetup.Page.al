@@ -30,9 +30,11 @@ page 70100 "Dataverse UI Setup"
                         Rec.SetClientSecret(ClientSecret);
                     end;
                 }
-                field(WebApiEndpoint; Rec."Web API endpoint")
+                field(WebApiEndpoint; EnvironmentUrl)
                 {
-                    Tooltip = 'Specifies the Web API endpoint base url of the Dataverse Environemnt. format https://xxxx.api.crm4.dynamics.com';
+                    Tooltip = 'Specifies the URL of the Dataverse environment that you want to connect to.';
+                    Editable = false;
+                    Caption = 'Environment URL';
                 }
                 field(VersionApi; Rec."Version API")
                 {
@@ -68,16 +70,29 @@ page 70100 "Dataverse UI Setup"
     var
         [NonDebuggable]
         ClientSecret: Text;
+        EnvironmentUrl: Text;
+        DataverseSetupErr: Label 'Please setup the connection of Dataverse first.';
 
     trigger OnOpenPage()
+    var
+        CDSConnectionSetup: Record "CDS Connection Setup";
     begin
         if not Rec.Get() then begin
             Rec.Init();
-            Rec."Web API endpoint" := 'https://xxxx.api.crm4.dynamics.com';
             Rec."Version API" := '9.2';
             Rec.Insert();
+
+            if CDSConnectionSetup.Get() then
+                EnvironmentUrl := CDSConnectionSetup."Server Address"
+            else
+                EnvironmentUrl := DataverseSetupErr;
         end else begin
             ClientSecret := Rec.GetClientSecret();
+
+            if CDSConnectionSetup.Get() then
+                EnvironmentUrl := CDSConnectionSetup."Server Address"
+            else
+                EnvironmentUrl := DataverseSetupErr;
         end;
     end;
 }

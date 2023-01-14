@@ -20,6 +20,8 @@ table 70106 "Dataverse UI Setup"
         field(40; "Web API endpoint"; Text[100])
         {
             Caption = 'Environment URL';
+            ObsoleteState = Pending;
+            ObsoleteReason = 'Please use field Server Adress from table CDS Connection Setup';
         }
         field(50; "Version API"; Text[5])
         {
@@ -29,8 +31,6 @@ table 70106 "Dataverse UI Setup"
         {
             Caption = 'Prefix Dataverse';
         }
-
-
     }
 
     keys
