@@ -8,6 +8,8 @@ Please if you have any ideas contribute to it if you have any ideas.
 
 Pull Request | Changes
 --------------- | ---
+[11](https://github.com/Bertverbeek4PS/DataverseSyncUI/issues/11) | Use now Server Address from table CDS Connection Setup.
+[10](https://github.com/Bertverbeek4PS/DataverseSyncUI/issues/10) | Added functionality to add Look-up fields.
 [8](https://github.com/Bertverbeek4PS/DataverseSyncUI/issues/8) | Adding functionality to add fields to existing Dataverse Table.
 [6](https://github.com/Bertverbeek4PS/DataverseSyncUI/issues/6) | Implemented the Oauth2 module.
 [3](https://github.com/Bertverbeek4PS/DataverseSyncUI/pull/3) | Added functionality to create Dataverse table through API.
