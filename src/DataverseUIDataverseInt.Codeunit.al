@@ -26,6 +26,7 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         DataverseUIField.SetRange("BC Table", DataverseUITable."BC Table");
         DataverseUIField.SetRange("Dataverse Field Added", false);
 
+        //Update table in Dataverse
         if DataverseUITable."Dataverse Table" <> 0 then begin
             ErrorField := false;
             EntityId := GetEntityIdDataverse(DataverseUITable);
@@ -34,9 +35,15 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
                 repeat
                     //For each field it must be a seperate call
                     Clear(ResponseMessage);
-                    JsonBody := CreateFieldJson(DataverseUIField."BC Table", DataverseUIField."BC Field");
-                    JsonBody.WriteTo(Body);
-                    ResponseMessage := SendHttpRequest(Body, EntityId, true);
+                    if DataverseUIField."Dataverse Lookup Field" = 0 then begin
+                        JsonBody := CreateFieldJson(DataverseUIField."BC Table", DataverseUIField."BC Field");
+                        JsonBody.WriteTo(Body);
+                        ResponseMessage := SendHttpRequest(Body, EntityId, true, false);
+                    end else begin
+                        JsonBody := Lookupfield(DataverseUIField);
+                        JsonBody.WriteTo(Body);
+                        ResponseMessage := SendHttpRequest(Body, EntityId, true, true);
+                    end;
 
                     if ResponseMessage.HttpStatusCode = 204 then begin
                         DataverseUIField2.Get(DataverseUIField."Mapping Name", DataverseUIField."BC Table", DataverseUIField."BC Field");
@@ -53,12 +60,13 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
                 Message(StrSubstNo(Tableupdated, DataverseUITable."BC Table Caption", ''))
 
         end else begin
+            //Create new table in Dataverse
             Clear(ResponseMessage);
-
+            DataverseUIField.SetRange("Dataverse Lookup Field", 0);
             JsonBody := CreateTableJson(DataverseUITable, DataverseUIField);
             JsonBody.WriteTo(Body);
-            message(body);
-            ResponseMessage := SendHttpRequest(Body, '', false);
+
+            ResponseMessage := SendHttpRequest(Body, '', false, false);
 
             if ResponseMessage.HttpStatusCode = 204 then begin
                 if DataverseUITable."Table Name Dataverse" = '' then begin
@@ -66,6 +74,22 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
                         DataverseUISetup."Prefix Dataverse", GetDataverseCompliantName(DataverseUITable."BC Table Caption")));
                     DataverseUITable.Modify(true);
                 end;
+                //Start for each lookup field a request
+                DataverseUIField.Reset;
+                DataverseUIField.SetRange("BC Table", DataverseUITable."BC Table");
+                DataverseUIField.SetFilter("Dataverse Lookup Field", '<>%1', 0);
+                if DataverseUIField.FindSet() then
+                    repeat
+                        Clear(ResponseMessage);
+                        Clear(JsonBody);
+                        JsonBody := Lookupfield(DataverseUIField);
+                        JsonBody.WriteTo(Body);
+                        ResponseMessage := SendHttpRequest(Body, EntityId, true, true);
+
+                        if ResponseMessage.HttpStatusCode = 204 then begin
+                        end;
+                    until DataverseUIField.Next = 0;
+
                 DataverseUIField.ModifyAll("Dataverse Field Added", true); //Modify if everything is successfull
 
                 Message(StrSubstNo(tablecreated, DataverseUITable."BC Table Caption"));
@@ -74,7 +98,7 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         end;
     end;
 
-    local procedure SendHttpRequest(Body: Text; EntityId: Text; Update: Boolean): HttpResponseMessage
+    local procedure SendHttpRequest(Body: Text; EntityId: Text; Update: Boolean; LookupField: Boolean): HttpResponseMessage
     var
         Client: HttpClient;
         RequestMessage: HttpRequestMessage;
@@ -86,6 +110,7 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         DataverseUISetup: Record "Dataverse UI Setup";
         UriCreate: Label '%1/api/data/v%2/EntityDefinitions', Locked = true;
         UriUpdate: Label '%1/api/data/v%2/EntityDefinitions(%3)/Attributes', Locked = true;
+        CreateLookup: Label '%1/api/data/v%2/RelationshipDefinitions', Locked = true;
     begin
         Clear(RequestMessage);
         Client.Clear();
@@ -98,10 +123,12 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         AccessToken := GetAccessToken();
 
         RequestMessage.Method('POST');
-        if Update then
-            RequestMessage.SetRequestUri(StrSubstNo(UriUpdate, DataverseUISetup."Web API endpoint", DataverseUISetup."Version API", EntityId))
-        else
+        if Update and not LookupField then
+            RequestMessage.SetRequestUri(StrSubstNo(UriUpdate, DataverseUISetup."Web API endpoint", DataverseUISetup."Version API", EntityId));
+        if not Update and not LookupField then
             RequestMessage.SetRequestUri(StrSubstNo(UriCreate, DataverseUISetup."Web API endpoint", DataverseUISetup."Version API"));
+        if LookupField then
+            RequestMessage.SetRequestUri(StrSubstNo(CreateLookup, DataverseUISetup."Web API endpoint", DataverseUISetup."Version API"));
 
         Client.DefaultRequestHeaders().Add('Authorization', StrSubstNo('Bearer %1', AccessToken));
         Client.DefaultRequestHeaders().Add('Accept', 'application/json');
@@ -495,6 +522,135 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         FieldJson.Add('AttributeType', 'Money');
         JArrProperty.Add('Value', 'MoneyType');
         FieldJson.Add('AttributeTypeName', JArrProperty);
+    end;
+
+    local procedure Lookupfield(var DataverseUIField: Record "Dataverse UI Field"): JsonObject
+    var
+        Fld: Record Field;
+        FldLookUp: Record Field;
+        FieldJson: JsonObject;
+        JsonObject1: JsonObject;
+        JsonObject2: JsonObject;
+        JsonObject3: JsonObject;
+        JsonArr: JsonArray;
+        JArrProperty: JsonObject;
+        JAObjLocalizedLabels: JsonObject;
+        JArrLocalizedLabels: JsonArray;
+        DataverseUITable: Record "Dataverse UI Table";
+        DataverseUISetup: Record "Dataverse UI Setup";
+    begin
+        Fld.SetRange(TableNo, DataverseUIField."BC Table");
+        fld.SetRange("No.", DataverseUIField."BC Field");
+        if Fld.FindFirst() then begin
+            DataverseUISetup.Get();
+            FldLookUp.Get(DataverseUIField."Dataverse Lookup Table", DataverseUIField."Dataverse Lookup Field");
+
+            FieldJson.Add('SchemaName', StrSubstNo('%1_%2_%3', DataverseUISetup."Prefix Dataverse", LowerCase(GetDataverseCompliantName(Fld.FieldName)), LowerCase(GetDataverseCompliantName(FldLookUp.FieldName))));
+            FieldJson.Add('@odata.type', 'Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata');
+
+            Clear(JsonObject1);
+            Clear(JArrProperty);
+            Clear(JAObjLocalizedLabels);
+            Clear(JArrLocalizedLabels);
+            Clear(JsonArr);
+            //AssociatedMenuConfiguration
+            JsonObject1.Add('Behavior', 'UseCollectionName');
+            JsonObject1.Add('Group', 'Details');
+
+            JArrProperty.Add('@odata.type', 'Microsoft.Dynamics.CRM.Label');
+            JAObjLocalizedLabels.Add('@odata.type', 'Microsoft.Dynamics.CRM.LocalizedLabel');
+            JAObjLocalizedLabels.Add('Label', Fld.FieldName);
+            JAObjLocalizedLabels.Add('LanguageCode', 1033);
+            JArrLocalizedLabels.Add(JAObjLocalizedLabels);
+            JArrProperty.Add('LocalizedLabels', JArrLocalizedLabels);
+            Clear(JAObjLocalizedLabels);
+            JAObjLocalizedLabels.Add('@odata.type', 'Microsoft.Dynamics.CRM.LocalizedLabel');
+            JAObjLocalizedLabels.Add('Label', Fld.FieldName);
+            JAObjLocalizedLabels.Add('LanguageCode', 1033);
+            JArrProperty.Add('UserLocalizedLabel', JAObjLocalizedLabels);
+
+            JsonObject1.Add('Label', JArrProperty);
+            JsonObject1.Add('Order', 10000);
+
+            FieldJson.Add('AssociatedMenuConfiguration', JsonObject1);
+
+            Clear(JsonObject1);
+            Clear(JsonObject2);
+            //CascadeConfiguration
+            JsonObject1.Add('Assign', 'NoCascade');
+            JsonObject1.Add('Delete', 'RemoveLink');
+            JsonObject1.Add('Merge', 'NoCascade');
+            JsonObject1.Add('Reparent', 'NoCascade');
+            JsonObject1.Add('Share', 'NoCascade');
+            JsonObject1.Add('Unshare', 'NoCascade');
+            JsonObject1.Add('Archive', 'RemoveLink');
+            FieldJson.Add('CascadeConfiguration', JsonObject1);
+            FieldJson.Add('ReferencedAttribute', DataverseUIField."Dataverse Lookup Field Caption");
+            FieldJson.Add('ReferencedEntity', DataverseUIField."Dataverse Lookup Table Caption");
+
+            DataverseUITable.Get(DataverseUIField."Mapping Name");
+            if DataverseUITable."Table Name Dataverse" <> '' then
+                FieldJson.Add('ReferencingEntity', DataverseUITable."Table Name Dataverse")
+            else
+                FieldJson.Add('ReferencingEntity', StrSubstNo('%1_%2',
+                DataverseUISetup."Prefix Dataverse", GetDataverseCompliantName(DataverseUITable."BC Table Caption")));
+
+            Clear(JsonObject1);
+            Clear(JsonObject2);
+            //Lookup
+            JsonObject1.Add('AttributeType', 'Lookup');
+            JsonObject1.Add('AttributeTypeName', JsonObject2);
+            JsonObject2.Add('Value', 'LookupType');
+
+            Clear(JArrProperty);
+            Clear(JAObjLocalizedLabels);
+            Clear(JArrLocalizedLabels);
+            //Description of the field
+            JArrProperty.Add('@odata.type', 'Microsoft.Dynamics.CRM.Label');
+            JAObjLocalizedLabels.Add('@odata.type', 'Microsoft.Dynamics.CRM.LocalizedLabel');
+            JAObjLocalizedLabels.Add('Label', StrSubstNo('Type the %1 of the %2', Fld.FieldName, Fld.TableName));
+            JAObjLocalizedLabels.Add('LanguageCode', 1033);
+            JArrLocalizedLabels.Add(JAObjLocalizedLabels);
+            JArrProperty.Add('LocalizedLabels', JArrLocalizedLabels);
+
+            Clear(JAObjLocalizedLabels);
+            JAObjLocalizedLabels.Add('@odata.type', 'Microsoft.Dynamics.CRM.LocalizedLabel');
+            JAObjLocalizedLabels.Add('Label', StrSubstNo('Type the %1 of the %2', Fld.FieldName, Fld.TableName));
+            JAObjLocalizedLabels.Add('LanguageCode', 1033);
+            JArrProperty.Add('UserLocalizedLabel', JAObjLocalizedLabels);
+            JsonObject1.Add('Description', JArrProperty);
+
+            Clear(JArrProperty);
+            Clear(JAObjLocalizedLabels);
+            Clear(JArrLocalizedLabels);
+            //DisplayName of the field
+            JArrProperty.Add('@odata.type', 'Microsoft.Dynamics.CRM.Label');
+            JAObjLocalizedLabels.Add('@odata.type', 'Microsoft.Dynamics.CRM.LocalizedLabel');
+            JAObjLocalizedLabels.Add('Label', Fld.FieldName);
+            JAObjLocalizedLabels.Add('LanguageCode', 1033);
+            JArrLocalizedLabels.Add(JAObjLocalizedLabels);
+            JArrProperty.Add('LocalizedLabels', JArrLocalizedLabels);
+            Clear(JAObjLocalizedLabels);
+            JAObjLocalizedLabels.Add('@odata.type', 'Microsoft.Dynamics.CRM.LocalizedLabel');
+            JAObjLocalizedLabels.Add('Label', Fld.FieldName);
+            JAObjLocalizedLabels.Add('LanguageCode', 1033);
+            JArrProperty.Add('UserLocalizedLabel', JAObjLocalizedLabels);
+            JsonObject1.Add('DisplayName', JArrProperty);
+
+            Clear(JsonObject2);
+            //RequiredLevel of the field
+            JsonObject2.Add('Value', 'ApplicationRequired');
+            JsonObject2.Add('CanBeChanged', true);
+            JsonObject2.Add('ManagedPropertyLogicalName', 'canmodifyrequirementlevelsettings');
+            JsonObject1.Add('RequiredLevel', JsonObject2);
+
+            JsonObject1.Add('SchemaName', StrSubstNo('%1_%2', DataverseUISetup."Prefix Dataverse", GetDataverseCompliantName(Fld.FieldName)));
+            JsonObject1.Add('@odata.type', 'Microsoft.Dynamics.CRM.LookupAttributeMetadata');
+            FieldJson.Add('Lookup', JsonObject1);
+
+            exit(FieldJson);
+        end;
+
     end;
 
     internal procedure GetDataverseCompliantName(Name: Text) Result: Text

@@ -115,6 +115,53 @@ table 70101 "Dataverse UI Field"
             DataClassification = ToBeClassified;
             Caption = 'Dataverse Field Added';
         }
+        field(160; "Dataverse Lookup Table"; integer)
+        {
+            DataClassification = ToBeClassified;
+            TableRelation = AllObjWithCaption."Object ID" where("Object Type" = Const(Table), "Object Subtype" = Const('CRM'));
+            Caption = 'Dataverse Lookup Table';
+
+            trigger OnValidate()
+            var
+                DataverseUIDataverseIntegr: Codeunit "Dataverse UI Dataverse Integr.";
+                AllObjWithCaption: Record AllObjWithCaption;
+            begin
+                if rec."Dataverse Lookup Table" <> 0 then begin
+                    if xRec."Dataverse Lookup Table" <> rec."Dataverse Lookup Table" then begin
+                        AllObjWithCaption.Get(AllObjWithCaption."Object Type"::Table, Rec."Dataverse Lookup Table");
+                        rec."Dataverse Lookup Table Caption" := DelChr(LowerCase(AllObjWithCaption."Object Name"), '<>', 'cds ');
+                    end;
+                end else
+                    Rec."Dataverse Lookup Field" := 0;
+
+            end;
+        }
+        field(165; "Dataverse Lookup Table Caption"; Text[30])
+        {
+            DataClassification = ToBeClassified;
+            Caption = 'Dataverse Lookup Table Caption';
+        }
+        field(170; "Dataverse Lookup Field"; Integer)
+        {
+            DataClassification = ToBeClassified;
+            TableRelation = Field."No." where(TableNo = field("Dataverse Lookup Table"));
+            Caption = 'Dataverse Lookup Field';
+
+            trigger OnValidate()
+            var
+                Fld: Record Field;
+            begin
+                if xRec."Dataverse Lookup Field" <> Rec."Dataverse Lookup Field" then begin
+                    Fld.Get(Rec."Dataverse Lookup Table", Rec."Dataverse Lookup Field");
+                    Rec."Dataverse Lookup Field Caption" := LowerCase(Fld.FieldName);
+                end;
+            end;
+        }
+        field(180; "Dataverse Lookup Field Caption"; Text[100])
+        {
+            DataClassification = ToBeClassified;
+            Caption = 'Dataverse Lookup Field Caption';
+        }
     }
 
     keys
