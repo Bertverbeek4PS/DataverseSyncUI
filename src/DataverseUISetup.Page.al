@@ -34,6 +34,7 @@ page 70100 "Dataverse UI Setup"
                 {
                     Tooltip = 'Specifies the URL of the Dataverse environment that you want to connect to.';
                     Editable = false;
+                    Caption = 'Environment URL';
                 }
                 field(VersionApi; Rec."Version API")
                 {
