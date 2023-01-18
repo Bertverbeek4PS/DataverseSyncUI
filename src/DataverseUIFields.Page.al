@@ -36,9 +36,9 @@ page 70101 "Dataverse UI Fields"
                         FieldSelection: Codeunit "Field Selection";
                     begin
                         Fld.SetRange(TableNo, Rec."BC Table");
-                        if FieldSelection.Open(Fld) then begin
+                        Fld.SetRange(ObsoleteState, Fld.ObsoleteState::No);
+                        if FieldSelection.Open(Fld) then
                             Rec.Validate("BC Field", Fld."No.");
-                        end;
                     end;
                 }
                 field("BC Field Caption"; Rec."BC Field Caption")
@@ -66,9 +66,8 @@ page 70101 "Dataverse UI Fields"
                         FieldSelection: Codeunit "Field Selection";
                     begin
                         Fld.SetRange(TableNo, Rec."Dataverse Table");
-                        if FieldSelection.Open(Fld) then begin
+                        if FieldSelection.Open(Fld) then
                             Rec.Validate("Dataverse Field", Fld."No.");
-                        end;
                     end;
                 }
                 field("Dataverse Field Caption"; Rec."Dataverse Field Caption")
@@ -93,9 +92,8 @@ page 70101 "Dataverse UI Fields"
                         FieldSelection: Codeunit "Field Selection";
                     begin
                         Fld.SetRange(TableNo, Rec."Dataverse Lookup Table");
-                        if FieldSelection.Open(Fld) then begin
+                        if FieldSelection.Open(Fld) then
                             Rec.Validate("Dataverse Lookup Field", Fld."No.");
-                        end;
                     end;
                 }
                 field("Dataverse Lookup Field Caption"; Rec."Dataverse Lookup Field Caption")
@@ -108,10 +106,9 @@ page 70101 "Dataverse UI Fields"
 
                     trigger OnValidate()
                     begin
-                        if xrec."Dataverse Field Added" = true then begin
+                        if xrec."Dataverse Field Added" = true then
                             if not Confirm(DataverseFieldAddedQst, false) then
                                 rec."Dataverse Field Added" := true;
-                        end;
                     end;
                 }
                 field("Sync Direction"; Rec."Sync Direction")
@@ -141,9 +138,9 @@ page 70101 "Dataverse UI Fields"
                     begin
                         Field.SetRange(TableNo, Database::"Dataverse UI Temp Table");
                         Field.SetFilter("No.", '<>1&..1999999999');
-                        if FieldSelection.Open(Field) then begin
+                        Field.SetRange(ObsoleteState, Field.ObsoleteState::No);
+                        if FieldSelection.Open(Field) then
                             Rec."Field on CDS Page" := Field."No.";
-                        end;
                     end;
                 }
             }
@@ -169,6 +166,7 @@ page 70101 "Dataverse UI Fields"
                     if DataverseUITable.Get(Rec."Mapping Name") then;
 
                     Fld.SetRange(TableNo, Rec."BC Table");
+                    Fld.SetRange(ObsoleteState, Fld.ObsoleteState::No);
                     Fld.SetFilter(Type, '%1|%2|%3|%4|%5|%6|%7|%8|%9|%10|%11|%12',
                     Fld.Type::BigInteger,
                     Fld.Type::Boolean,
