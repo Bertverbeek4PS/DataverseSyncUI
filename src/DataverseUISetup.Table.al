@@ -45,6 +45,22 @@ table 70106 "Dataverse UI Setup"
         ClientSecret: Text;
         ClientSecretKeyName: Label 'dataverse-client-secret', Locked = true;
 
+    trigger OnInsert()
+    var
+        FeatureTelemetry: Codeunit "Feature Telemetry";
+        FeatureUptakeStatus: Enum "Feature Uptake Status";
+    begin
+        FeatureTelemetry.LogUptake('DVUI010', 'Dataverse UI', FeatureUptakeStatus::"Set up");
+    end;
+
+    trigger OnDelete()
+    var
+        FeatureTelemetry: Codeunit "Feature Telemetry";
+        FeatureUptakeStatus: Enum "Feature Uptake Status";
+    begin
+        FeatureTelemetry.LogUptake('DVUI010', 'Dataverse UI', FeatureUptakeStatus::Undiscovered);
+    end;
+
     [NonDebuggable]
     internal procedure GetClientSecret(): Text
     begin

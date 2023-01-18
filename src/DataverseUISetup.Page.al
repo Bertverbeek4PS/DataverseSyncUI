@@ -76,6 +76,8 @@ page 70100 "Dataverse UI Setup"
     trigger OnOpenPage()
     var
         CDSConnectionSetup: Record "CDS Connection Setup";
+        FeatureTelemetry: Codeunit "Feature Telemetry";
+        FeatureUptakeStatus: Enum "Feature Uptake Status";
     begin
         if not Rec.Get() then begin
             Rec.Init();
@@ -94,5 +96,7 @@ page 70100 "Dataverse UI Setup"
             else
                 EnvironmentUrl := DataverseSetupErr;
         end;
+
+        FeatureTelemetry.LogUptake('DVUI010', 'Dataverse UI', FeatureUptakeStatus::Discovered);
     end;
 }
