@@ -18,6 +18,8 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         DataverseUIField: Record "Dataverse UI Field";
         DataverseUIField2: Record "Dataverse UI Field";
         ErrorField: Boolean;
+        FeatureTelemetry: Codeunit "Feature Telemetry";
+        FeatureUptakeStatus: Enum "Feature Uptake Status";
     begin
 
         if DataverseUISetup.Get() then;
@@ -54,9 +56,10 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
 
                 Until DataverseUIField.Next = 0;
 
-            if ErrorField then
-                Message(StrSubstNo(Tableupdated, DataverseUITable."BC Table Caption", FieldUpdateFFailed))
-            else
+            if ErrorField then begin
+                Message(StrSubstNo(Tableupdated, DataverseUITable."BC Table Caption", FieldUpdateFFailed));
+                FeatureTelemetry.LogError('DVUI010', 'Dataverse UI', 'Update Dataverse Table', ResponseMessage.ReasonPhrase);
+            end else
                 Message(StrSubstNo(Tableupdated, DataverseUITable."BC Table Caption", ''))
 
         end else begin
@@ -95,9 +98,13 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
                 DataverseUIField.ModifyAll("Dataverse Field Added", true); //Modify if everything is successfull
 
                 Message(StrSubstNo(tablecreated, DataverseUITable."BC Table Caption"));
-            end else
+            end else begin
                 Message(ResponseMessage.ReasonPhrase);
+                FeatureTelemetry.LogError('DVUI010', 'Dataverse UI', 'Create Dataverse Table', ResponseMessage.ReasonPhrase);
+            end;
         end;
+
+        FeatureTelemetry.LogUptake('DVUI010', 'Dataverse UI', FeatureUptakeStatus::Used);
     end;
 
     local procedure SendHttpRequest(Body: Text; EntityId: Text; Update: Boolean; LookupField: Boolean): HttpResponseMessage

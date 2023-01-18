@@ -105,12 +105,14 @@ page 70103 "Dataverse UI Tables"
 
                 trigger OnAction()
                 var
-                    DataverseUIEvents: Codeunit "Dataverse UI Events";
                     IntegrationTableMapping: Record "Integration Table Mapping";
+                    DataverseUIEvents: Codeunit "Dataverse UI Events";
+                    FeatureTelemetry: Codeunit "Feature Telemetry";
+                    FeatureUptakeStatus: Enum "Feature Uptake Status";
                 begin
                     if rec."Dataverse Table" <> 0 then begin
                         //Delete IntegrationFieldMapping
-                        IntegrationTableMapping.Reset;
+                        IntegrationTableMapping.Reset();
                         IntegrationTableMapping.SetRange(Name, Rec."Mapping Name");
                         if not IntegrationTableMapping.IsEmpty then begin
                             AnswerUpdate := Confirm(UpdateOrCreate, true);
@@ -129,6 +131,7 @@ page 70103 "Dataverse UI Tables"
                     end else
                         Message(CreateTableMappingErrorMsg);
 
+                    FeatureTelemetry.LogUptake('DVUI010', 'Dataverse UI', FeatureUptakeStatus::Used);
                 end;
             }
             action(CreateDataverseTable)
