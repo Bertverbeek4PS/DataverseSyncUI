@@ -1,7 +1,7 @@
 page 70103 "Dataverse UI Tables"
 {
-    PageType = ListPart;
     ApplicationArea = All;
+    PageType = ListPart;
     SourceTable = "Dataverse UI Table";
 
     layout
@@ -12,55 +12,61 @@ page 70103 "Dataverse UI Tables"
             {
                 field("Mapping Name"; Rec."Mapping Name")
                 {
+                    ToolTip = 'Is the mapping name that is used in the integration table. If you want to expand an excisting integration table use the same mapping name.';
                 }
                 field("BC Table"; Rec."BC Table")
                 {
+                    ToolTip = 'Specifies the BC table that you want to sync.';
                 }
                 field("BC Table Caption"; Rec."BC Table Caption")
                 {
+                    ToolTip = 'Caption of the Business Central table.';
                 }
                 field("Dataverse Table"; Rec."Dataverse Table")
                 {
+                    ToolTip = 'Specify the Dataverse table that you want to map with the Business Central table.';
                 }
                 field("Dataverse Table Caption"; Rec."Dataverse Table Caption")
                 {
+                    ToolTip = 'Caption of the Dataverse table.';
                 }
                 field("Table Name Dataverse"; Rec."Table Name Dataverse")
                 {
+                    ToolTip = 'Specifies the value of the Table Name Dataverse field.';
                 }
                 field("Sync Direction"; Rec."Sync Direction")
                 {
+                    ToolTip = 'Specify the sync direction of the integration.';
                 }
                 field("Dataverse UID"; Rec."Dataverse UID")
                 {
-
+                    ToolTip = 'Specifies the value of the Dataverse UID field.';
                     trigger OnLookup(var Text: Text): Boolean
                     var
                         "Field": Record "Field";
                         FieldSelection: Codeunit "Field Selection";
                     begin
                         Field.SetRange(TableNo, Rec."Dataverse Table");
-                        if FieldSelection.Open(Field) then begin
+                        if FieldSelection.Open(Field) then
                             Rec."Dataverse UID" := Field."No.";
-                        end;
                     end;
                 }
                 field("Modified Field"; Rec."Modified Field")
                 {
-
+                    ToolTip = 'Specifies the value of the Modified on field.';
                     trigger OnLookup(var Text: Text): Boolean
                     var
                         "Field": Record "Field";
                         FieldSelection: Codeunit "Field Selection";
                     begin
                         Field.SetRange(TableNo, Rec."Dataverse Table");
-                        if FieldSelection.Open(Field) then begin
+                        if FieldSelection.Open(Field) then
                             Rec."Modified Field" := Field."No.";
-                        end;
                     end;
                 }
                 field("Sync Only Coupled Records"; Rec."Sync Only Coupled Records")
                 {
+                    ToolTip = 'Specifies if you only want to sync coupled records or all records.';
                 }
             }
         }
@@ -72,11 +78,11 @@ page 70103 "Dataverse UI Tables"
         {
             action(Fields)
             {
-                ApplicationArea = All;
                 Caption = 'Fields';
-                RunObject = Page "Dataverse UI Fields";
                 Image = SelectField;
+                RunObject = page "Dataverse UI Fields";
                 RunPageLink = "Mapping Name" = field("Mapping Name"), "BC Table" = field("BC Table");
+                ToolTip = 'Executes the Fields action.';
             }
             action(ResetConfiguration)
             {
@@ -86,15 +92,14 @@ page 70103 "Dataverse UI Tables"
 
                 trigger OnAction()
                 var
-                    CDSSetupDefaults: Codeunit "CDS Setup Defaults";
                     CDSConnectionSetup: Record "CDS Connection Setup";
+                    CDSSetupDefaults: Codeunit "CDS Setup Defaults";
                 begin
-                    if Confirm(ResetIntegrationTableMappingConfirmQst, false) then begin
+                    if Confirm(ResetIntegrationTableMappingConfirmQst, false) then
                         if CDSConnectionSetup.Get() then begin
                             CDSSetupDefaults.ResetConfiguration(CDSConnectionSetup);
                             Message(SetupSuccessfulMsg);
                         end;
-                    end;
                 end;
             }
             action(CreateTableMapping)
@@ -110,12 +115,12 @@ page 70103 "Dataverse UI Tables"
                     FeatureTelemetry: Codeunit "Feature Telemetry";
                     FeatureUptakeStatus: Enum "Feature Uptake Status";
                 begin
-                    if rec."Dataverse Table" <> 0 then begin
+                    if Rec."Dataverse Table" <> 0 then begin
                         //Delete IntegrationFieldMapping
                         IntegrationTableMapping.Reset();
                         IntegrationTableMapping.SetRange(Name, Rec."Mapping Name");
                         if not IntegrationTableMapping.IsEmpty then begin
-                            AnswerUpdate := Confirm(UpdateOrCreate, true);
+                            AnswerUpdate := Confirm(UpdateOrCreateQst, true);
                             if AnswerUpdate then begin
                                 DataverseUIEvents.InsertIntegrationMapping(Rec."Mapping Name", true);
                                 Message(UpdateTableMappingMsg);
@@ -144,7 +149,7 @@ page 70103 "Dataverse UI Tables"
                 var
                     DataverseUIDataverseIntegr: Codeunit "Dataverse UI Dataverse Integr.";
                 begin
-                    DataverseUIDataverseIntegr.CreateTable(rec);
+                    DataverseUIDataverseIntegr.CreateTable(Rec);
                     CurrPage.Update();
                 end;
             }
@@ -156,27 +161,26 @@ page 70103 "Dataverse UI Tables"
 
                 trigger OnAction()
                 var
-                    CDSSetupDefaults: Codeunit "CDS Setup Defaults";
                     IntegrationTableMapping: Record "Integration Table Mapping";
                     JobQueueEntryNameTok: Label ' %1 - %2 synchronization job.', Comment = '%1 = The Integration Table Name to synchronized (ex. CUSTOMER), %2 = CRM product name';
                 begin
-                    IntegrationTableMapping.Reset;
+                    IntegrationTableMapping.Reset();
                     IntegrationTableMapping.SetRange(Name, Rec."Mapping Name");
-                    If IntegrationTableMapping.FindFirst() then
-                        Rec.CreateJobQueueEntry(IntegrationTableMapping, Codeunit::"Integration Synch. Job Runner", StrSubstNo(JobQueueEntryNameTok, IntegrationTableMapping.GetTempDescription()));
+                    if IntegrationTableMapping.FindFirst() then
+                        Rec.CreateJobQueueEntry(IntegrationTableMapping, Codeunit::"Integration Synch. Job Runner", StrSubstNo(JobQueueEntryNameTok, rec."BC Table Caption", rec."Dataverse Table Caption"));
 
-                    Message(CreateJobQueue);
+                    Message(CreateJobQueueMsg);
                 end;
             }
         }
     }
     var
         AnswerUpdate: Boolean;
-        UpdateOrCreate: Label 'Do you want to update the Integration Table Mapping?';
+        CreateJobQueueMsg: Label 'The Job Queue is succesfully created.';
+        CreateTableMappingErrorMsg: Label 'The Integration Table Mapping could not be created.';
+        CreateTableMappingMsg: Label 'The Integration Table Mapping is succesfully created.';
         ResetIntegrationTableMappingConfirmQst: Label 'This will restore the default integration table mappings and synchronization jobs for Dataverse. All customizations to mappings and jobs will be deleted. The default mappings and jobs will be used the next time data is synchronized. Do you want to continue?';
         SetupSuccessfulMsg: Label 'The default setup for Dataverse synchronization has completed successfully.';
-        CreateTableMappingMsg: Label 'The Integration Table Mapping is succesfully created.';
+        UpdateOrCreateQst: Label 'Do you want to update the Integration Table Mapping?';
         UpdateTableMappingMsg: Label 'The Integration Table Mapping is succesfully updated.';
-        CreateJobQueue: Label 'The Job Queue is succesfully created.';
-        CreateTableMappingErrorMsg: Label 'The Integration Table Mapping could not be created.';
 }

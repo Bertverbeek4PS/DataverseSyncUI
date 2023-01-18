@@ -128,7 +128,6 @@ table 70101 "Dataverse UI Field"
             trigger OnValidate()
             var
                 AllObjWithCaption: Record AllObjWithCaption;
-                DataverseUIDataverseIntegr: Codeunit "Dataverse UI Dataverse Integr.";
             begin
                 if Rec."Dataverse Lookup Table" <> 0 then begin
                     if xRec."Dataverse Lookup Table" <> Rec."Dataverse Lookup Table" then begin
@@ -178,68 +177,68 @@ table 70101 "Dataverse UI Field"
     var
         FieldClassNormalErr: Label 'Only fields with class normal can be added.';
         FieldTypeNotSupportedErr: Label 'The field %1 of type %2 is not supported.', Comment = '%1 = field name, %2 = field type';
-        FieldTypeNotTheSameErr: Label 'The field %1 with type %2 must be the same as type %3.';
+        FieldTypeNotTheSameErr: Label 'The field %1 with type %2 must be the same as type %3.', Comment = '%1 = field name, %2 = field type, %3 = field type';
 
     [TryFunction]
-    internal procedure CanFieldBeInserted(Fld: Record Field)
+    internal procedure CanFieldBeInserted(FieldRec: Record Field)
     begin
-        CheckFieldTypeForSync(Fld);
+        CheckFieldTypeForSync(FieldRec);
     end;
 
-    internal procedure CheckFieldTypeForSync(Fld: Record Field)
+    internal procedure CheckFieldTypeForSync(FieldRec: Record Field)
     begin
-        if Fld.Class <> Fld.Class::Normal then
+        if FieldRec.Class <> FieldRec.Class::Normal then
             Error(FieldClassNormalErr);
 
-        case Fld.Type of
-            Fld.Type::BigInteger,
-            Fld.Type::Boolean,
-            Fld.Type::Code,
-            Fld.Type::Date,
-            Fld.Type::DateFormula,
-            Fld.Type::DateTime,
-            Fld.Type::Decimal,
-            Fld.Type::Duration,
-            Fld.Type::GUID,
-            Fld.Type::Integer,
-            Fld.Type::Option,
-            Fld.Type::Text:
+        case FieldRec.Type of
+            FieldRec.Type::BigInteger,
+            FieldRec.Type::Boolean,
+            FieldRec.Type::Code,
+            FieldRec.Type::Date,
+            FieldRec.Type::DateFormula,
+            FieldRec.Type::DateTime,
+            FieldRec.Type::Decimal,
+            FieldRec.Type::Duration,
+            FieldRec.Type::GUID,
+            FieldRec.Type::Integer,
+            FieldRec.Type::Option,
+            FieldRec.Type::Text:
                 exit;
         end;
-        Error(FieldTypeNotSupportedErr, Fld."Field Caption", Fld.Type);
+        Error(FieldTypeNotSupportedErr, FieldRec."Field Caption", FieldRec.Type);
     end;
 
-    internal procedure CompareFieldType(FldBC: Record Field; FldDataverse: Record Field)
+    internal procedure CompareFieldType(FieldBC: Record Field; FieldDataverse: Record Field)
     begin
-        if (FldBC.Type = FldBC.Type::Code) and (FldDataverse.Type = FldDataverse.Type::Text) then
+        if (FieldBC.Type = FieldBC.Type::Code) and (FieldDataverse.Type = FieldDataverse.Type::Text) then
             exit;
-        if FldBC.Type <> FldDataverse.Type then
-            Error(FieldTypeNotTheSameErr, FldDataverse."Field Caption", FldDataverse.Type, FldBC.Type);
+        if FieldBC.Type <> FieldDataverse.Type then
+            Error(FieldTypeNotTheSameErr, FieldDataverse."Field Caption", FieldDataverse.Type, FieldBC.Type);
     end;
 
     internal procedure MapFields(MappingName: Code[20]; BCTable: Integer; DataverseTable: Integer)
     var
         DataverseUIFieldsMap: Record "Dataverse UI Field";
-        Fld: Record Field;
-        FldName: Record Field;
+        FieldRec: Record Field;
+        FieldName: Record Field;
         DataverseUIDataverseIntegr: Codeunit "Dataverse UI Dataverse Integr.";
     begin
         if DataverseTable = 0 then
             exit;
 
-        DataverseUIFieldsMap.Reset;
+        DataverseUIFieldsMap.Reset();
         DataverseUIFieldsMap.SetRange("Mapping Name", MappingName);
         DataverseUIFieldsMap.SetRange("BC Table", BCTable);
         if DataverseUIFieldsMap.FindSet() then
             repeat
-                FldName.Get(DataverseUIFieldsMap."BC Table", DataverseUIFieldsMap."BC Field");
+                FieldName.Get(DataverseUIFieldsMap."BC Table", DataverseUIFieldsMap."BC Field");
 
-                Fld.Reset;
-                Fld.SetRange(TableNo, DataverseTable);
-                Fld.SetFilter(FieldName, '%1', '*' + DataverseUIDataverseIntegr.GetDataverseCompliantName(FldName.FieldName));
-                if Fld.FindFirst() then
-                    DataverseUIFieldsMap."Dataverse Field" := Fld."No.";
+                FieldRec.Reset();
+                FieldRec.SetRange(TableNo, DataverseTable);
+                FieldRec.SetFilter(FieldName, '%1', '*' + DataverseUIDataverseIntegr.GetDataverseCompliantName(FieldName.FieldName));
+                if FieldRec.FindFirst() then
+                    DataverseUIFieldsMap."Dataverse Field" := FieldRec."No.";
                 DataverseUIFieldsMap.Modify(true);
-            until DataverseUIFieldsMap.Next = 0;
+            until DataverseUIFieldsMap.Next() = 0;
     end;
 }

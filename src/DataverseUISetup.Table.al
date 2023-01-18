@@ -20,8 +20,8 @@ table 70106 "Dataverse UI Setup"
         field(40; "Web API endpoint"; Text[100])
         {
             Caption = 'Environment URL';
-            ObsoleteState = Pending;
             ObsoleteReason = 'Please use field Server Adress from table CDS Connection Setup';
+            ObsoleteState = Pending;
         }
         field(50; "Version API"; Text[5])
         {
@@ -41,9 +41,9 @@ table 70106 "Dataverse UI Setup"
         }
     }
     var
+        ClientSecretKeyNameLbl: Label 'dataverse-client-secret', Locked = true;
         [NonDebuggable]
         ClientSecret: Text;
-        ClientSecretKeyName: Label 'dataverse-client-secret', Locked = true;
 
     trigger OnInsert()
     var
@@ -64,14 +64,14 @@ table 70106 "Dataverse UI Setup"
     [NonDebuggable]
     internal procedure GetClientSecret(): Text
     begin
-        exit(GetSecret(ClientSecretKeyName));
+        exit(GetSecret(ClientSecretKeyNameLbl));
     end;
 
     [NonDebuggable]
     internal procedure SetClientSecret(NewClientSecretValue: Text): Text
     begin
         ClientSecret := NewClientSecretValue;
-        SetSecret(ClientSecretKeyName, NewClientSecretValue);
+        SetSecret(ClientSecretKeyNameLbl, NewClientSecretValue);
     end;
 
     [NonDebuggable]

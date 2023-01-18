@@ -1,5 +1,6 @@
 page 70101 "Dataverse UI Fields"
 {
+    ApplicationArea = All;
     PageType = List;
     SourceTable = "Dataverse UI Field";
 
@@ -11,24 +12,24 @@ page 70101 "Dataverse UI Fields"
             {
                 field("Mapping Name"; Rec."Mapping Name")
                 {
-                    ApplicationArea = All;
-                    Visible = false;
                     Editable = false;
+                    ToolTip = 'Is the mapping name that is used in the integration table. If you want to expand an excisting integration table use the same mapping name.';
+                    Visible = false;
                 }
                 field("BC Table"; Rec."BC Table")
                 {
-                    ApplicationArea = All;
-                    Visible = false;
                     Editable = false;
+                    ToolTip = 'Specifies the BC table that you want to sync.';
+                    Visible = false;
                 }
                 field("BC Table Caption"; Rec."BC Table Caption")
                 {
-                    ApplicationArea = All;
+                    ToolTip = 'Caption of the Business Central table.';
                     Visible = false;
                 }
                 field("BC Field"; Rec."BC Field")
                 {
-                    ApplicationArea = All;
+                    ToolTip = 'Specifies the BC field that you want to sync.';
 
                     trigger OnLookup(var Text: Text): Boolean
                     var
@@ -43,22 +44,22 @@ page 70101 "Dataverse UI Fields"
                 }
                 field("BC Field Caption"; Rec."BC Field Caption")
                 {
-                    ApplicationArea = All;
+                    ToolTip = 'Caption of the Business Central field.';
                 }
                 field("Dataverse Table"; Rec."Dataverse Table")
                 {
-                    ApplicationArea = All;
-                    Visible = false;
                     Editable = false;
+                    ToolTip = 'Specify the Dataverse table that you want to map with the Business Central table.';
+                    Visible = false;
                 }
                 field("Dataverse Table Caption"; Rec."Dataverse Table Caption")
                 {
-                    ApplicationArea = All;
+                    ToolTip = 'Caption of the Dataverse table.';
                     Visible = false;
                 }
                 field("Dataverse Field"; Rec."Dataverse Field")
                 {
-                    ApplicationArea = All;
+                    ToolTip = 'Specify the Dataverse field that you want to map with the Business Central table.';
 
                     trigger OnLookup(var Text: Text): Boolean
                     var
@@ -72,19 +73,19 @@ page 70101 "Dataverse UI Fields"
                 }
                 field("Dataverse Field Caption"; Rec."Dataverse Field Caption")
                 {
-                    ApplicationArea = All;
+                    ToolTip = 'Caption of the Dataverse field.';
                 }
                 field("Dataverse Lookup Table"; Rec."Dataverse Lookup Table")
                 {
-                    ApplicationArea = All;
+                    ToolTip = 'Specify the Dataverse table that you want to create a lookup to.';
                 }
                 field("Dataverse Lookup Table Caption"; Rec."Dataverse Lookup Table Caption")
                 {
-                    ApplicationArea = All;
+                    ToolTip = 'Caption of the Dataverse lookup table.';
                 }
                 field("Dataverse Lookup Field"; Rec."Dataverse Lookup Field")
                 {
-                    ApplicationArea = All;
+                    ToolTip = 'Specify the Dataverse field that you want to create a lookup to.';
 
                     trigger OnLookup(var Text: Text): Boolean
                     var
@@ -98,38 +99,38 @@ page 70101 "Dataverse UI Fields"
                 }
                 field("Dataverse Lookup Field Caption"; Rec."Dataverse Lookup Field Caption")
                 {
-                    ApplicationArea = All;
+                    ToolTip = 'Caption of the Dataverse lookup field.';
                 }
                 field("Dataverse Field Added"; Rec."Dataverse Field Added")
                 {
-                    ApplicationArea = All;
+                    ToolTip = 'If the field is added in Dataverse this boolean becomes true.';
 
                     trigger OnValidate()
                     begin
-                        if xrec."Dataverse Field Added" = true then
+                        if xRec."Dataverse Field Added" = true then
                             if not Confirm(DataverseFieldAddedQst, false) then
-                                rec."Dataverse Field Added" := true;
+                                Rec."Dataverse Field Added" := true;
                     end;
                 }
                 field("Sync Direction"; Rec."Sync Direction")
                 {
-                    ApplicationArea = All;
+                    ToolTip = 'Specify the sync direction of the integration.';
                 }
                 field("Const Value"; Rec."Const Value")
                 {
-                    ApplicationArea = All;
+                    ToolTip = 'Here you can specify a constant value. If you do not want to specify a field.';
                 }
                 field("Validate Field"; Rec."Validate Field")
                 {
-                    ApplicationArea = All;
+                    ToolTip = 'Specify if you want to trigger the validate trigger on the Business Central table when data gets in.';
                 }
                 field("Validate Integr Table Field"; Rec."Validate Integr Table Field")
                 {
-                    ApplicationArea = All;
+                    ToolTip = 'Specify if you want to trigger the validate trigger on the Dataverse table when data gets in.';
                 }
                 field("Show Field on Page"; Rec."Field on CDS Page")
                 {
-                    ApplicationArea = All;
+                    ToolTip = 'Specify which column you want this field in the Dataverse lookup page.';
 
                     trigger OnLookup(var Text: Text): Boolean
                     var
@@ -153,15 +154,14 @@ page 70101 "Dataverse UI Fields"
             action(SelectAll)
             {
                 Caption = 'Enable all valid fields';
-                ApplicationArea = All;
-                ToolTip = 'Enables all fields of the table that can be enabled.';
                 Image = Apply;
+                ToolTip = 'Enables all fields of the table that can be enabled.';
 
                 trigger OnAction()
                 var
-                    SomeFieldsCouldNotBeEnabled: Boolean;
-                    Fld: Record Field;
                     DataverseUITable: Record "Dataverse UI Table";
+                    Fld: Record Field;
+                    SomeFieldsCouldNotBeEnabled: Boolean;
                 begin
                     if DataverseUITable.Get(Rec."Mapping Name") then;
 
@@ -176,7 +176,7 @@ page 70101 "Dataverse UI Fields"
                     Fld.Type::DateTime,
                     Fld.Type::Decimal,
                     Fld.Type::Duration,
-                    Fld.Type::Guid,
+                    Fld.Type::GUID,
                     Fld.Type::Integer,
                     Fld.Type::Option,
                     Fld.Type::Text
@@ -185,7 +185,7 @@ page 70101 "Dataverse UI Fields"
                     if Fld.FindSet() then
                         repeat
                             if Rec.CanFieldBeInserted(Fld) then begin
-                                Rec.Init;
+                                Rec.Init();
                                 Rec."BC Field" := Fld."No.";
                                 Rec."Dataverse Table" := DataverseUITable."Dataverse Table";
                                 Rec.Insert(true);
@@ -199,9 +199,8 @@ page 70101 "Dataverse UI Fields"
             action(MapFields)
             {
                 Caption = 'Map Dataverse Fields';
-                ApplicationArea = All;
-                ToolTip = 'Map and insert Dataverse Fields.';
                 Image = Apply;
+                ToolTip = 'Map and insert Dataverse Fields.';
 
                 trigger OnAction()
                 begin
@@ -211,16 +210,15 @@ page 70101 "Dataverse UI Fields"
             action(CreateField)
             {
                 Caption = 'Create Fields';
-                ApplicationArea = All;
-                ToolTip = 'Create the not added field(s) in Dataverse';
                 Image = Insert;
+                ToolTip = 'Create the not added field(s) in Dataverse';
 
                 trigger OnAction()
                 var
-                    DataverseUIDataverseIntegr: Codeunit "Dataverse UI Dataverse Integr.";
                     DataverseUITable: Record "Dataverse UI Table";
+                    DataverseUIDataverseIntegr: Codeunit "Dataverse UI Dataverse Integr.";
                 begin
-                    if DataverseUITable.Get(rec."Mapping Name") then;
+                    if DataverseUITable.Get(Rec."Mapping Name") then;
                     DataverseUIDataverseIntegr.CreateTable(DataverseUITable);
                     CurrPage.Update();
                 end;
@@ -228,6 +226,6 @@ page 70101 "Dataverse UI Fields"
         }
     }
     var
-        SomeFieldsCouldNotBeEnabledMsg: Label 'One or more fields could not be inserted.';
         DataverseFieldAddedQst: Label 'Do you really want to change the setting?';
+        SomeFieldsCouldNotBeEnabledMsg: Label 'One or more fields could not be inserted.';
 }
