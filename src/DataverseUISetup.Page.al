@@ -1,11 +1,11 @@
 page 70100 "Dataverse UI Setup"
 {
-    PageType = Card;
     ApplicationArea = All;
     Caption = 'Dataverse UI Setup';
     Editable = true;
-    UsageCategory = Administration;
+    PageType = Card;
     SourceTable = "Dataverse UI Setup";
+    UsageCategory = Administration;
     layout
     {
         area(Content)
@@ -14,16 +14,17 @@ page 70100 "Dataverse UI Setup"
             {
                 field(TenantId; Rec."Tenant ID")
                 {
-                    Tooltip = 'Specifies the Tenant id for the Azure App Registration that accesses Dataverse.';
+                    ToolTip = 'Specifies the Tenant id for the Azure App Registration that accesses Dataverse.';
                 }
                 field(ClientId; Rec."Client ID")
                 {
-                    Tooltip = 'Specifies the client id for the Azure App Registration that accesses Dataverse.';
+                    ToolTip = 'Specifies the client id for the Azure App Registration that accesses Dataverse.';
                 }
                 field("Client Secret"; ClientSecret)
                 {
+                    Caption = 'Client Secret';
                     ExtendedDatatype = Masked;
-                    Tooltip = 'Specifies the client secret for the Azure App Registration that accesses Dataverse.';
+                    ToolTip = 'Specifies the client secret for the Azure App Registration that accesses Dataverse.';
 
                     trigger OnValidate()
                     begin
@@ -32,23 +33,21 @@ page 70100 "Dataverse UI Setup"
                 }
                 field(WebApiEndpoint; EnvironmentUrl)
                 {
-                    Tooltip = 'Specifies the URL of the Dataverse environment that you want to connect to.';
-                    Editable = false;
                     Caption = 'Environment URL';
+                    Editable = false;
+                    ToolTip = 'Specifies the URL of the Dataverse environment that you want to connect to.';
                 }
                 field(VersionApi; Rec."Version API")
                 {
-                    Tooltip = 'Specifies the version of the web API of the Dataverse Environemnt. Format 9.2';
+                    ToolTip = 'Specifies the version of the web API of the Dataverse Environemnt. Format 9.2';
                 }
                 field(PrefixDataverse; Rec."Prefix Dataverse")
                 {
-                    Tooltip = 'Specifies the prefix in Dataverse for table and fields. Format xxx';
+                    ToolTip = 'Specifies the prefix in Dataverse for table and fields. Format xxx';
                 }
-
             }
             part(Tables; "Dataverse UI Tables")
             {
-                ApplicationArea = All;
                 UpdatePropagation = Both;
             }
         }
@@ -60,18 +59,18 @@ page 70100 "Dataverse UI Setup"
         {
             action(IntegrationTableMapping)
             {
-                ApplicationArea = All;
                 Caption = 'Integration Table Mapping';
-                RunObject = Page "Integration Table Mapping List";
                 Image = MapAccounts;
+                RunObject = page "Integration Table Mapping List";
+                ToolTip = 'Executes the Integration Table Mapping action.';
             }
         }
     }
     var
+        DataverseSetupErr: Label 'Please setup the connection of Dataverse first.';
         [NonDebuggable]
         ClientSecret: Text;
         EnvironmentUrl: Text;
-        DataverseSetupErr: Label 'Please setup the connection of Dataverse first.';
 
     trigger OnOpenPage()
     var

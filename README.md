@@ -8,6 +8,8 @@ Please if you have any ideas contribute to it if you have any ideas.
 
 Pull Request | Changes
 --------------- | ---
+[20](https://github.com/Bertverbeek4PS/DataverseSyncUI/issues/20) | Code cleanup.
+[18](https://github.com/Bertverbeek4PS/DataverseSyncUI/issues/18) | Feature Telemetry added.
 [16](https://github.com/Bertverbeek4PS/DataverseSyncUI/issues/16) | Obsolete fields are filtered out.
 [11](https://github.com/Bertverbeek4PS/DataverseSyncUI/issues/11) | Use now Server Address from table CDS Connection Setup.
 [10](https://github.com/Bertverbeek4PS/DataverseSyncUI/issues/10) | Added functionality to add Look-up fields.

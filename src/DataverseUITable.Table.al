@@ -6,94 +6,98 @@ table 70100 "Dataverse UI Table"
     {
         field(10; "Mapping Name"; Code[20])
         {
-            DataClassification = ToBeClassified;
             Caption = 'Mapping Name';
-        }
-        field(20; "BC Table"; integer)
-        {
             DataClassification = ToBeClassified;
-            TableRelation = AllObjWithCaption."Object ID" where("Object Type" = Const(Table), "Object Subtype" = Const('Normal'));
+        }
+        field(20; "BC Table"; Integer)
+        {
             Caption = 'BC Table';
+            DataClassification = ToBeClassified;
+            TableRelation = AllObjWithCaption."Object ID" where("Object Type" = const(Table), "Object Subtype" = const('Normal'));
         }
         field(30; "BC Table Caption"; Text[100])
         {
-            CalcFormula = Lookup(AllObjWithCaption."Object Name" Where("Object ID" = Field("BC Table")));
+            CalcFormula = lookup(AllObjWithCaption."Object Name" where("Object ID" = field("BC Table")));
             Caption = 'BC Table Caption';
+            Editable = false;
             FieldClass = FlowField;
         }
-        field(40; "Dataverse Table"; integer)
+        field(40; "Dataverse Table"; Integer)
         {
-            DataClassification = ToBeClassified;
-            TableRelation = AllObjWithCaption."Object ID" where("Object Type" = Const(Table), "Object Subtype" = Const('CRM'));
             Caption = 'Dataverse Table';
+            DataClassification = ToBeClassified;
+            TableRelation = AllObjWithCaption."Object ID" where("Object Type" = const(Table), "Object Subtype" = const('CRM'));
 
             trigger OnValidate()
             var
                 DataverseUIField: Record "Dataverse UI Field";
             begin
-                DataverseUIField.Reset;
+                DataverseUIField.Reset();
                 DataverseUIField.SetRange("Mapping Name", Rec."Mapping Name");
                 DataverseUIField.SetRange("BC Table", Rec."BC Table");
                 DataverseUIField.SetFilter("Dataverse Field", '<>%1', 0);
                 if not DataverseUIField.IsEmpty then
-                    Error(ErrorDataverseTable);
+                    Error(ErrorDataverseTableErr);
 
-                DataverseUIField.Reset;
+                DataverseUIField.Reset();
                 DataverseUIField.SetRange("Mapping Name", Rec."Mapping Name");
                 DataverseUIField.SetRange("BC Table", Rec."BC Table");
                 if DataverseUIField.FindSet() then
                     repeat
                         DataverseUIField."Dataverse Table" := Rec."Dataverse Table";
                         DataverseUIField.Modify(true);
-                    until DataverseUIField.Next = 0;
+                    until DataverseUIField.Next() = 0;
             end;
         }
         field(50; "Dataverse Table Caption"; Text[100])
         {
-            CalcFormula = Lookup(AllObjWithCaption."Object Name" Where("Object ID" = Field("Dataverse Table")));
+            CalcFormula = lookup(AllObjWithCaption."Object Name" where("Object ID" = field("Dataverse Table")));
             Caption = 'Dataverse Table Caption';
+            Editable = false;
             FieldClass = FlowField;
         }
-        field(60; "Dataverse UID"; integer)
+        field(60; "Dataverse UID"; Integer)
         {
-            DataClassification = ToBeClassified;
-            TableRelation = Field."No." where(TableNo = field("Dataverse table"));
             Caption = 'Dataverse UID';
+            DataClassification = ToBeClassified;
+            TableRelation = Field."No." where(TableNo = field("Dataverse Table"));
         }
         field(70; "Dataverse UID Caption"; Text[100])
         {
-            CalcFormula = Lookup(Field."Field Caption" Where(TableNo = Field("Dataverse Table"),
-                                                             "No." = Field("Dataverse UID")));
+            CalcFormula = lookup(Field."Field Caption" where(TableNo = field("Dataverse Table"),
+                                                             "No." = field("Dataverse UID")));
             Caption = 'Dataverse UID Caption';
+            Editable = false;
             FieldClass = FlowField;
         }
-        field(80; "Modified Field"; integer)
+        field(80; "Modified Field"; Integer)
         {
-            DataClassification = ToBeClassified;
-            TableRelation = Field."No." where(TableNo = field("Dataverse table"));
             Caption = 'Modified Field';
+            DataClassification = ToBeClassified;
+            TableRelation = Field."No." where(TableNo = field("Dataverse Table"));
         }
         field(90; "Modified Field Caption"; Text[100])
         {
-            CalcFormula = Lookup(Field."Field Caption" Where(TableNo = Field("Dataverse Table"),
-                                                             "No." = Field("Modified Field")));
+            CalcFormula = lookup(Field."Field Caption" where(TableNo = field("Dataverse Table"),
+                                                             "No." = field("Modified Field")));
             Caption = 'Modified Field Caption';
+            Editable = false;
             FieldClass = FlowField;
         }
         field(100; "Sync Only Coupled Records"; Boolean)
         {
-            DataClassification = ToBeClassified;
             Caption = 'Sync Only Coupled Records';
+            DataClassification = ToBeClassified;
         }
         field(110; "Table Name Dataverse"; Text[100])
         {
-            DataClassification = ToBeClassified;
             Caption = 'Table Name Dataverse';
+            DataClassification = ToBeClassified;
         }
         field(120; "Sync Direction"; Enum "Dataverse UI Sync Direct.")
         {
-            DataClassification = ToBeClassified;
             Caption = 'Sync Direction';
+            DataClassification = ToBeClassified;
         }
     }
 
@@ -105,13 +109,13 @@ table 70100 "Dataverse UI Table"
         }
     }
     var
-        ErrorDataverseTable: Label 'You cannot change the Dataverse table because there are fields assigned.';
+        ErrorDataverseTableErr: Label 'You cannot change the Dataverse table because there are fields assigned.';
 
     trigger OnDelete()
     var
         DataverseUIField: Record "Dataverse UI Field";
     begin
-        DataverseUIField.Reset;
+        DataverseUIField.Reset();
         DataverseUIField.SetRange("Mapping Name", "Mapping Name");
         DataverseUIField.DeleteAll();
     end;
