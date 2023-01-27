@@ -23,6 +23,11 @@ table 70101 "Dataverse UI Field"
             Editable = false;
             FieldClass = FlowField;
         }
+        field(35; "Primary Key"; Boolean)
+        {
+            Caption = 'Primary Key';
+            DataClassification = ToBeClassified;
+        }
         field(40; "BC Field"; Integer)
         {
             Caption = 'BC Field';
@@ -38,6 +43,9 @@ table 70101 "Dataverse UI Field"
                 Rec."Dataverse Table" := DataverseUITable."Dataverse Table";
                 Fld.Get(Rec."BC Table", Rec."BC Field");
                 CheckFieldTypeForSync(Fld);
+
+                if Fld.IsPartOfPrimaryKey then
+                    Rec."Primary Key" := true;
             end;
         }
         field(50; "BC Field Caption"; Text[100])
