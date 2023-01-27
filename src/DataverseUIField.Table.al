@@ -216,6 +216,12 @@ table 70101 "Dataverse UI Field"
             Error(FieldTypeNotTheSameErr, FieldDataverse."Field Caption", FieldDataverse.Type, FieldBC.Type);
     end;
 
+    [TryFunction]
+    local procedure TryCompareFieldType(FieldBC: Record Field; FieldDataverse: Record Field)
+    begin
+        CompareFieldType(FieldBC, FieldDataverse);
+    end;
+
     internal procedure MapFields(MappingName: Code[20]; BCTable: Integer; DataverseTable: Integer)
     var
         DataverseUIFieldsMap: Record "Dataverse UI Field";
@@ -229,6 +235,7 @@ table 70101 "Dataverse UI Field"
         DataverseUIFieldsMap.Reset();
         DataverseUIFieldsMap.SetRange("Mapping Name", MappingName);
         DataverseUIFieldsMap.SetRange("BC Table", BCTable);
+        DataverseUIFieldsMap.SetRange("Dataverse Field", 0);
         if DataverseUIFieldsMap.FindSet() then
             repeat
                 FieldName.Get(DataverseUIFieldsMap."BC Table", DataverseUIFieldsMap."BC Field");
@@ -237,8 +244,10 @@ table 70101 "Dataverse UI Field"
                 FieldRec.SetRange(TableNo, DataverseTable);
                 FieldRec.SetFilter(FieldName, '%1', '*' + DataverseUIDataverseIntegr.GetDataverseCompliantName(FieldName.FieldName));
                 if FieldRec.FindFirst() then
-                    DataverseUIFieldsMap."Dataverse Field" := FieldRec."No.";
-                DataverseUIFieldsMap.Modify(true);
+                    if TryCompareFieldType(FieldName, FieldRec) then begin
+                        DataverseUIFieldsMap.Validate("Dataverse Field", FieldRec."No.");
+                        DataverseUIFieldsMap.Modify(true);
+                    end;
             until DataverseUIFieldsMap.Next() = 0;
     end;
 }
