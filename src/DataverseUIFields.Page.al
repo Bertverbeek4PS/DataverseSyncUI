@@ -28,6 +28,10 @@ page 70101 "Dataverse UI Fields"
                     ToolTip = 'Caption of the Business Central table.';
                     Visible = false;
                 }
+                field("Primary Key"; Rec."Primary Key")
+                {
+                    ToolTip = 'Select the Primary Key of the Dataverse table. At least one field in the Primary Key must be a text field.';
+                }
                 field("BC Field"; Rec."BC Field")
                 {
                     ToolTip = 'Specifies the BC field that you want to sync.';
