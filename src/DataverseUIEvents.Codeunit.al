@@ -21,20 +21,16 @@ codeunit 70100 "Dataverse UI Events"
             DataverseUIField.SetRange("Mapping Name", IntegrationTableMappingName);
             if DataverseUIField.FindSet() then
                 repeat
-                    if Update then begin
-                        IntegrationFieldMapping.Reset();
-                        IntegrationFieldMapping.SetRange("Integration Table Mapping Name", DataverseUIField."Mapping Name");
-                        IntegrationFieldMapping.SetRange("Field No.", DataverseUIField."BC Field");
-                        if not IntegrationFieldMapping.IsEmpty() then
-                            InsertIntegrationFieldMapping(
+                    if Update then
+                        InsertIntegrationFieldMapping(
                         DataverseUIField."Mapping Name",
                         DataverseUIField."BC Field",
                         DataverseUIField."Dataverse Field",
                         DataverseUIField."Sync Direction".AsInteger(),
                         DataverseUIField."Const Value",
                         DataverseUIField."Validate Field",
-                        DataverseUIField."Validate Integr Table Field");
-                    end else
+                        DataverseUIField."Validate Integr Table Field")
+                    else
                         InsertIntegrationFieldMapping(
                             DataverseUIField."Mapping Name",
                             DataverseUIField."BC Field",
