@@ -23,6 +23,11 @@ table 70101 "Dataverse UI Field"
             Editable = false;
             FieldClass = FlowField;
         }
+        field(35; "Primary Key"; Boolean)
+        {
+            Caption = 'Primary Key';
+            DataClassification = ToBeClassified;
+        }
         field(40; "BC Field"; Integer)
         {
             Caption = 'BC Field';
@@ -38,6 +43,9 @@ table 70101 "Dataverse UI Field"
                 Rec."Dataverse Table" := DataverseUITable."Dataverse Table";
                 Fld.Get(Rec."BC Table", Rec."BC Field");
                 CheckFieldTypeForSync(Fld);
+
+                if Fld.IsPartOfPrimaryKey then
+                    Rec."Primary Key" := true;
             end;
         }
         field(50; "BC Field Caption"; Text[100])
@@ -216,6 +224,12 @@ table 70101 "Dataverse UI Field"
             Error(FieldTypeNotTheSameErr, FieldDataverse."Field Caption", FieldDataverse.Type, FieldBC.Type);
     end;
 
+    [TryFunction]
+    local procedure TryCompareFieldType(FieldBC: Record Field; FieldDataverse: Record Field)
+    begin
+        CompareFieldType(FieldBC, FieldDataverse);
+    end;
+
     internal procedure MapFields(MappingName: Code[20]; BCTable: Integer; DataverseTable: Integer)
     var
         DataverseUIFieldsMap: Record "Dataverse UI Field";
@@ -229,7 +243,7 @@ table 70101 "Dataverse UI Field"
         DataverseUIFieldsMap.Reset();
         DataverseUIFieldsMap.SetRange("Mapping Name", MappingName);
         DataverseUIFieldsMap.SetRange("BC Table", BCTable);
-        DataverseUIFieldsMap.SetFilter("Dataverse Field", '<>%1', 0);
+        DataverseUIFieldsMap.SetRange("Dataverse Field", 0);
         if DataverseUIFieldsMap.FindSet() then
             repeat
                 FieldName.Get(DataverseUIFieldsMap."BC Table", DataverseUIFieldsMap."BC Field");
@@ -238,8 +252,10 @@ table 70101 "Dataverse UI Field"
                 FieldRec.SetRange(TableNo, DataverseTable);
                 FieldRec.SetFilter(FieldName, '%1', '*' + DataverseUIDataverseIntegr.GetDataverseCompliantName(FieldName.FieldName));
                 if FieldRec.FindFirst() then
-                    DataverseUIFieldsMap."Dataverse Field" := FieldRec."No.";
-                DataverseUIFieldsMap.Modify(true);
+                    if TryCompareFieldType(FieldName, FieldRec) then begin
+                        DataverseUIFieldsMap.Validate("Dataverse Field", FieldRec."No.");
+                        DataverseUIFieldsMap.Modify(true);
+                    end;
             until DataverseUIFieldsMap.Next() = 0;
     end;
 }

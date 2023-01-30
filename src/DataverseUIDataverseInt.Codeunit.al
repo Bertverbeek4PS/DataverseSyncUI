@@ -1,20 +1,21 @@
 codeunit 70101 "Dataverse UI Dataverse Integr."
 {
-
-
     internal procedure CreateTable(DataverseUITable: Record "Dataverse UI Table")
     var
         DataverseUIField: Record "Dataverse UI Field";
         DataverseUIField2: Record "Dataverse UI Field";
         DataverseUISetup: Record "Dataverse UI Setup";
+        PMKey: Record Field;
         FeatureTelemetry: Codeunit "Feature Telemetry";
         ErrorField: Boolean;
+        PmKeyTrue: Boolean;
         FeatureUptakeStatus: Enum "Feature Uptake Status";
         ResponseMessage: HttpResponseMessage;
         JsonBody: JsonObject;
         FieldUpdateFFailedLbl: Label 'But some field(s) are failed. Please look in the fields page.';
         TablecreatedLbl: Label 'Table %1 is created in Dataverse', comment = '%1 = BC table';
         TableupdatedLbl: Label 'Table %1 is updated in Dataverse. %2', comment = '%1 = BC table, %2 = Dataverse table';
+        FailOnPKErr: Label 'No good Primary Key is selected. Please select also a field of type code or text.';
         Body: Text;
         EntityId: Text;
         DataverseNameLbl: Label '%1_%2', comment = '%1 = Prefix, %2 = Table name';
@@ -36,7 +37,7 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
                     //For each field it must be a seperate call
                     Clear(ResponseMessage);
                     if DataverseUIField."Dataverse Lookup Field" = 0 then begin
-                        JsonBody := CreateFieldJson(DataverseUIField."BC Table", DataverseUIField."BC Field");
+                        JsonBody := CreateFieldJson(DataverseUIField."BC Table", DataverseUIField."BC Field", DataverseUIField);
                         JsonBody.WriteTo(Body);
                         ResponseMessage := SendHttpRequest(Body, EntityId, true, false);
                     end else begin
@@ -61,6 +62,22 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
 
         end else begin
             //Create new table in Dataverse
+            PmKeyTrue := false;
+            DataverseUIField2.Reset();
+            DataverseUIField2.SetRange("BC Table", DataverseUITable."BC Table");
+            DataverseUIField2.SetRange("Primary Key", true);
+            if DataverseUIField2.FindSet() then
+                repeat
+                    PMKey.Get(DataverseUIField2."BC Table", DataverseUIField2."BC Field");
+                    if PMKey.Type = PMKey.Type::Text then
+                        PmKeyTrue := true;
+                    if PMKey.Type = PMKey.Type::Code then
+                        PmKeyTrue := true;
+                until DataverseUIField2.Next = 0;
+
+            if not PmKeyTrue then
+                Error(FailOnPKErr);
+
             Clear(ResponseMessage);
             DataverseUIField.SetRange("Dataverse Lookup Field", 0);
             JsonBody := CreateTableJson(DataverseUITable, DataverseUIField);
@@ -176,7 +193,7 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         FieldJson.Add('OptionSet', JObjOption);
     end;
 
-    local procedure CreateFieldJson(lTable: Integer; lField: Integer): JsonObject
+    local procedure CreateFieldJson(lTable: Integer; lField: Integer; var DataverseUIField1: Record "Dataverse UI Field"): JsonObject
     var
         DataverseUIField: Record "Dataverse UI Field";
         DataverseUISetup: Record "Dataverse UI Setup";
@@ -212,7 +229,7 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
                     JsonField(FieldJson, FieldBC);
             end;
 
-            if FieldBC.IsPartOfPrimaryKey then
+            if DataverseUIField1."Primary Key" then
                 FieldJson.Add('IsPrimaryName', 'true');
 
             Clear(JArrProperty);
@@ -309,11 +326,10 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
 
         //Add fields
         Clear(JArrFields);
-
         if DataverseUIField.FindSet() then
             repeat
                 Clear(JsonField);
-                JsonField := CreateFieldJson(DataverseUIField."BC Table", DataverseUIField."BC Field");
+                JsonField := CreateFieldJson(DataverseUIField."BC Table", DataverseUIField."BC Field", DataverseUIField);
                 JArrFields.Add(JsonField);
             until DataverseUIField.Next() = 0;
 

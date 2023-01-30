@@ -3,6 +3,7 @@ page 70101 "Dataverse UI Fields"
     ApplicationArea = All;
     PageType = List;
     SourceTable = "Dataverse UI Field";
+    DelayedInsert = true;
 
     layout
     {
@@ -26,6 +27,10 @@ page 70101 "Dataverse UI Fields"
                 {
                     ToolTip = 'Caption of the Business Central table.';
                     Visible = false;
+                }
+                field("Primary Key"; Rec."Primary Key")
+                {
+                    ToolTip = 'Select the Primary Key of the Dataverse table. At least one field in the Primary Key must be a text field.';
                 }
                 field("BC Field"; Rec."BC Field")
                 {
@@ -68,7 +73,8 @@ page 70101 "Dataverse UI Fields"
                     begin
                         Fld.SetRange(TableNo, Rec."Dataverse Table");
                         if FieldSelection.Open(Fld) then
-                            Rec.Validate("Dataverse Field", Fld."No.");
+                            if Fld."No." <> 0 then
+                                Rec.Validate("Dataverse Field", Fld."No.");
                     end;
                 }
                 field("Dataverse Field Caption"; Rec."Dataverse Field Caption")
@@ -221,6 +227,17 @@ page 70101 "Dataverse UI Fields"
                     if DataverseUITable.Get(Rec."Mapping Name") then;
                     DataverseUIDataverseIntegr.CreateTable(DataverseUITable);
                     CurrPage.Update();
+                end;
+            }
+            action(ValidateFields)
+            {
+                Caption = 'Validate Fields';
+                Image = Apply;
+                ToolTip = 'Sets the property validate fields to true.';
+
+                trigger OnAction()
+                begin
+                    Rec.ModifyAll("Validate Field", true);
                 end;
             }
         }
