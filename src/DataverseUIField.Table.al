@@ -229,6 +229,7 @@ table 70101 "Dataverse UI Field"
         DataverseUIFieldsMap.Reset();
         DataverseUIFieldsMap.SetRange("Mapping Name", MappingName);
         DataverseUIFieldsMap.SetRange("BC Table", BCTable);
+        DataverseUIFieldsMap.SetFilter("Dataverse Field", '<>%1', 0);
         if DataverseUIFieldsMap.FindSet() then
             repeat
                 FieldName.Get(DataverseUIFieldsMap."BC Table", DataverseUIFieldsMap."BC Field");

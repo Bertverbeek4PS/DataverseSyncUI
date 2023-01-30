@@ -607,9 +607,11 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         JArrProperty: JsonObject;
         JObjLabel: JsonObject;
         JObjOptionSet: JsonObject;
-        JsonNullValue: JsonValue;
         OptionStringList: List of [Text];
         OptionString: Text;
+        FieldRefValueInt: Integer;
+        FldRef: FieldRef;
+        RecRef: RecordRef;
     begin
         FieldJson.Add('@odata.type', 'Microsoft.Dynamics.CRM.PicklistAttributeMetadata');
         FieldJson.Add('AttributeType', 'Picklist');
@@ -622,9 +624,15 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
             Clear(JAObjLocalizedLabels);
             Clear(JArrLocalizedLabels);
             Clear(JObjLabel);
+            FieldRefValueInt := -1;
+            RecRef.Close();
+            RecRef.Open(Fld.TableNo);
+            FldRef := RecRef.Field(fld."No.");
+            if Evaluate(FldRef, OptionString) then
+                FieldRefValueInt := FldRef.Value();
+
             JArrProperty.Add('@odata.type', 'Microsoft.Dynamics.CRM.Label');
-            JsonNullValue.SetValueToNull();
-            JObjLabel.Add('Value', JsonNullValue);
+            JObjLabel.Add('Value', FieldRefValueInt);
             JObjLabel.Add('IsManaged', 'false');
             JAObjLocalizedLabels.Add('@odata.type', 'Microsoft.Dynamics.CRM.LocalizedLabel');
             JAObjLocalizedLabels.Add('Label', OptionString);
