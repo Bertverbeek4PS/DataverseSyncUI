@@ -8,6 +8,7 @@ Please if you have any ideas contribute to it if you have any ideas.
 
 Pull Request | Changes
 --------------- | ---
+[26](https://github.com/Bertverbeek4PS/DataverseSyncUI/pull/26) | Added function to order the fields.
 [20](https://github.com/Bertverbeek4PS/DataverseSyncUI/issues/20) | Code cleanup.
 [18](https://github.com/Bertverbeek4PS/DataverseSyncUI/issues/18) | Feature Telemetry added.
 [16](https://github.com/Bertverbeek4PS/DataverseSyncUI/issues/16) | Obsolete fields are filtered out.
