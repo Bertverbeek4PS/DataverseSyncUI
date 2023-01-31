@@ -10,6 +10,11 @@ table 70101 "Dataverse UI Field"
             DataClassification = ToBeClassified;
             TableRelation = "Dataverse UI Table"."Mapping Name";
         }
+        field(15; "Order No."; Integer)
+        {
+            Caption = 'Order No.';
+            DataClassification = ToBeClassified;
+        }
         field(20; "BC Table"; Integer)
         {
             Caption = 'BC Table';
@@ -37,6 +42,7 @@ table 70101 "Dataverse UI Field"
             trigger OnValidate()
             var
                 DataverseUITable: Record "Dataverse UI Table";
+                DataverseUIField: Record "Dataverse UI Field";
                 Fld: Record Field;
             begin
                 DataverseUITable.Get("Mapping Name");
@@ -46,6 +52,15 @@ table 70101 "Dataverse UI Field"
 
                 if Fld.IsPartOfPrimaryKey then
                     Rec."Primary Key" := true;
+
+                //Sets order
+                DataverseUIField.SetCurrentKey("Order No.", "Mapping Name", "BC Table", "BC Field");
+                DataverseUIField.SetRange("Mapping Name", Rec."Mapping Name");
+                DataverseUIField.SetRange("BC Table", Rec."BC Table");
+                If DataverseUIField.FindLast() then
+                    Rec."Order No." := DataverseUIField."Order No." + 1
+                else
+                    Rec."Order No." := 1;
             end;
         }
         field(50; "BC Field Caption"; Text[100])
@@ -179,6 +194,9 @@ table 70101 "Dataverse UI Field"
         key(Key1; "Mapping Name", "BC Table", "BC Field")
         {
             Clustered = true;
+        }
+        key(Key2; "Order No.", "Mapping Name", "BC Table", "BC Field")
+        {
         }
     }
 

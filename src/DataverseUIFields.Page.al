@@ -28,6 +28,10 @@ page 70101 "Dataverse UI Fields"
                     ToolTip = 'Caption of the Business Central table.';
                     Visible = false;
                 }
+                field("Order No."; Rec."Order No.")
+                {
+                    ToolTip = 'Sets the order of the fields in the integration mapping table.';
+                }
                 field("Primary Key"; Rec."Primary Key")
                 {
                     ToolTip = 'Select the Primary Key of the Dataverse table. At least one field in the Primary Key must be a text field.';
