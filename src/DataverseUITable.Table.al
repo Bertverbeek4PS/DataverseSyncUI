@@ -154,6 +154,7 @@ table 70100 "Dataverse UI Table"
         JobQueueEntry.Description := CopyStr(JobDescription, 1, MaxStrLen(JobQueueEntry.Description));
         JobQueueEntry."Recurring Job" := true;
         JobQueueEntry."Inactivity Timeout Period" := 720;
-        JobQueueEntry.Insert(true);
+
+        Codeunit.Run(Codeunit::"Job Queue - Enqueue", JobQueueEntry);
     end;
 }

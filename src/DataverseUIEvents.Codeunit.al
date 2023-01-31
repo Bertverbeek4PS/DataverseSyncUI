@@ -18,6 +18,7 @@ codeunit 70100 "Dataverse UI Events"
                     DataverseUITable."Sync Direction".AsInteger());
             //fields
             DataverseUIField.Reset();
+            DataverseUIField.SetCurrentKey("Order No.", "Mapping Name", "BC Table", "BC Field");
             DataverseUIField.SetRange("Mapping Name", IntegrationTableMappingName);
             if DataverseUIField.FindSet() then
                 repeat
