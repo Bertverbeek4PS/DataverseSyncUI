@@ -257,7 +257,7 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
             FieldJson.Add('DisplayName', JArrProperty);
 
             Clear(JArrProperty);
-            //RequiredLevel of the field
+            //RequiredLevel of the field                
             JArrProperty.Add('Value', 'None');
             JArrProperty.Add('CanBeChanged', 'true');
             JArrProperty.Add('ManagedPropertyLogicalName', 'canmodifyrequirementlevelsettings');
@@ -633,6 +633,7 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         FieldJson.Add('AttributeType', 'Picklist');
         JArrProperty.Add('Value', 'PicklistType');
         FieldJson.Add('AttributeTypeName', JArrProperty);
+        FieldJson.Add('DefaultFormValue', 0);
 
         OptionStringList := Fld.OptionString.Split(',');
         foreach OptionString in OptionStringList do begin
