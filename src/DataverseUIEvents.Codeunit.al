@@ -176,9 +176,16 @@ codeunit 70100 "Dataverse UI Events"
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Lookup CRM Tables", 'OnLookupCRMTables', '', true, true)]
     local procedure HandleOnLookupCRMTables(CRMTableID: Integer; NAVTableId: Integer; SavedCRMId: Guid; var CRMId: Guid; IntTableFilter: Text; var Handled: Boolean)
     var
+        DataverseUITable4PS: Record "Dataverse UI Table";
         DataverseUITempTable: Record "Dataverse UI Temp Table";
         DataverseUIList: Page "Dataverse UI List";
     begin
+        DataverseUITable4PS.Reset();
+        DataverseUITable4PS.SetRange("BC Table", NAVTableId);
+        DataverseUITable4PS.SetRange("Dataverse Table", CRMTableID);
+        If not DataverseUITable4PS.FindFirst() then
+            exit;
+
         DataverseUIList.SetGlobalVar(CRMTableID, NAVTableId, SavedCRMId, CRMId, IntTableFilter);
 
         DataverseUIList.LookupMode(true);
