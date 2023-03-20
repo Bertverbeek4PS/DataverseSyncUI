@@ -109,6 +109,7 @@ codeunit 70100 "Dataverse UI Events"
     begin
         //tables
         DataverseUITable.Reset();
+        DataverseUITable.SetFilter("Mapping Name", '<>%1', '');
         if DataverseUITable.FindSet() then
             repeat
                 InsertIntegrationTableMapping(
