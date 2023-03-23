@@ -339,7 +339,7 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
     end;
 
     [NonDebuggable]
-    local procedure GetAccessToken(): Text
+    internal procedure GetAccessToken(): Text
     var
         CDSConnectionSetup: Record "CDS Connection Setup";
         DataverseUISetup: Record "Dataverse UI Setup";

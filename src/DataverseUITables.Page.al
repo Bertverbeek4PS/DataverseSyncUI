@@ -102,75 +102,92 @@ page 70103 "Dataverse UI Tables"
                         end;
                 end;
             }
-            action(CreateTableMapping)
+            group(Create)
             {
-                Caption = 'Create/Update Integration Table Mapping';
-                Image = Insert;
-                ToolTip = 'Creates or updates the Integration Table Mapping for the selected record.';
+                Caption = 'Create';
+                action(CreateDataverseTable)
+                {
+                    Caption = 'Create/Update Dataverse Table';
+                    Image = Insert;
+                    ToolTip = 'Creates or updates a Dataverse table inside Dataverse';
 
-                trigger OnAction()
-                var
-                    IntegrationTableMapping: Record "Integration Table Mapping";
-                    DataverseUIEvents: Codeunit "Dataverse UI Events";
-                    FeatureTelemetry: Codeunit "Feature Telemetry";
-                    FeatureUptakeStatus: Enum "Feature Uptake Status";
-                begin
-                    if Rec."Dataverse Table" <> 0 then begin
-                        //Delete IntegrationFieldMapping
-                        IntegrationTableMapping.Reset();
-                        IntegrationTableMapping.SetRange(Name, Rec."Mapping Name");
-                        if not IntegrationTableMapping.IsEmpty then begin
-                            AnswerUpdate := Confirm(UpdateOrCreateQst, true);
-                            if AnswerUpdate then begin
-                                DataverseUIEvents.InsertIntegrationMapping(Rec."Mapping Name", true);
-                                Message(UpdateTableMappingMsg);
+                    trigger OnAction()
+                    var
+                        DataverseUIDataverseIntegr: Codeunit "Dataverse UI Dataverse Integr.";
+                    begin
+                        DataverseUIDataverseIntegr.CreateTable(Rec);
+                        CurrPage.Update();
+                    end;
+                }
+                action(CreateBCProxyTable)
+                {
+                    Caption = 'Create BC Proxy Table';
+                    Image = Insert;
+                    ToolTip = 'Creates a Business Central Proxy table. This file can be uploaded through an extension.';
+
+                    trigger OnAction()
+                    var
+                        DataverseUIBCProxyGen: Codeunit "Dataverse UI BC Proxy Gen.";
+                    begin
+                        DataverseUIBCProxyGen.CreateBCProxyTable(Rec);
+                    end;
+                }
+                action(CreateTableMapping)
+                {
+                    Caption = 'Create/Update Integration Table Mapping';
+                    Image = Insert;
+                    ToolTip = 'Creates or updates the Integration Table Mapping for the selected record.';
+
+                    trigger OnAction()
+                    var
+                        IntegrationTableMapping: Record "Integration Table Mapping";
+                        DataverseUIEvents: Codeunit "Dataverse UI Events";
+                        FeatureTelemetry: Codeunit "Feature Telemetry";
+                        FeatureUptakeStatus: Enum "Feature Uptake Status";
+                    begin
+                        if Rec."Dataverse Table" <> 0 then begin
+                            //Delete IntegrationFieldMapping
+                            IntegrationTableMapping.Reset();
+                            IntegrationTableMapping.SetRange(Name, Rec."Mapping Name");
+                            if not IntegrationTableMapping.IsEmpty then begin
+                                AnswerUpdate := Confirm(UpdateOrCreateQst, true);
+                                if AnswerUpdate then begin
+                                    DataverseUIEvents.InsertIntegrationMapping(Rec."Mapping Name", true);
+                                    Message(UpdateTableMappingMsg);
+                                end else begin
+                                    IntegrationTableMapping.Delete(true);
+                                    DataverseUIEvents.InsertIntegrationMapping(Rec."Mapping Name", false);
+                                    Message(CreateTableMappingMsg);
+                                end;
                             end else begin
-                                IntegrationTableMapping.Delete(true);
                                 DataverseUIEvents.InsertIntegrationMapping(Rec."Mapping Name", false);
                                 Message(CreateTableMappingMsg);
                             end;
-                        end else begin
-                            DataverseUIEvents.InsertIntegrationMapping(Rec."Mapping Name", false);
-                            Message(CreateTableMappingMsg);
-                        end;
-                    end else
-                        Message(CreateTableMappingErrorMsg);
+                        end else
+                            Message(CreateTableMappingErrorMsg);
 
-                    FeatureTelemetry.LogUptake('DVUI010', 'Dataverse UI', FeatureUptakeStatus::Used);
-                end;
-            }
-            action(CreateDataverseTable)
-            {
-                Caption = 'Create/Update Dataverse Table';
-                Image = Insert;
-                ToolTip = 'Creates or updates a Dataverse table inside Dataverse';
+                        FeatureTelemetry.LogUptake('DVUI010', 'Dataverse UI', FeatureUptakeStatus::Used);
+                    end;
+                }
+                action(CreateJobQueue)
+                {
+                    Caption = 'Create Job Queue';
+                    Image = Insert;
+                    ToolTip = 'Creates a Job Queue of the selected entry';
 
-                trigger OnAction()
-                var
-                    DataverseUIDataverseIntegr: Codeunit "Dataverse UI Dataverse Integr.";
-                begin
-                    DataverseUIDataverseIntegr.CreateTable(Rec);
-                    CurrPage.Update();
-                end;
-            }
-            action(CreateJobQueue)
-            {
-                Caption = 'Create Job Queue';
-                Image = Insert;
-                ToolTip = 'Creates a Job Queue of the selected entry';
+                    trigger OnAction()
+                    var
+                        IntegrationTableMapping: Record "Integration Table Mapping";
+                        JobQueueEntryNameTok: Label ' %1 - %2 synchronization job.', Comment = '%1 = The Integration Table Name to synchronized (ex. CUSTOMER), %2 = CRM product name';
+                    begin
+                        IntegrationTableMapping.Reset();
+                        IntegrationTableMapping.SetRange(Name, Rec."Mapping Name");
+                        if IntegrationTableMapping.FindFirst() then
+                            Rec.CreateJobQueueEntry(IntegrationTableMapping, Codeunit::"Integration Synch. Job Runner", StrSubstNo(JobQueueEntryNameTok, rec."BC Table Caption", rec."Dataverse Table Caption"));
 
-                trigger OnAction()
-                var
-                    IntegrationTableMapping: Record "Integration Table Mapping";
-                    JobQueueEntryNameTok: Label ' %1 - %2 synchronization job.', Comment = '%1 = The Integration Table Name to synchronized (ex. CUSTOMER), %2 = CRM product name';
-                begin
-                    IntegrationTableMapping.Reset();
-                    IntegrationTableMapping.SetRange(Name, Rec."Mapping Name");
-                    if IntegrationTableMapping.FindFirst() then
-                        Rec.CreateJobQueueEntry(IntegrationTableMapping, Codeunit::"Integration Synch. Job Runner", StrSubstNo(JobQueueEntryNameTok, rec."BC Table Caption", rec."Dataverse Table Caption"));
-
-                    Message(CreateJobQueueMsg);
-                end;
+                        Message(CreateJobQueueMsg);
+                    end;
+                }
             }
         }
     }
