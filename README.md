@@ -8,6 +8,7 @@ Please if you have any ideas contribute to it if you have any ideas.
 
 Pull Request | Changes
 --------------- | ---
+[33](https://github.com/Bertverbeek4PS/DataverseSyncUI/pull/33) | Added feature to create procy table for Business Central.
 [26](https://github.com/Bertverbeek4PS/DataverseSyncUI/pull/26) | Added function to order the fields.
 [20](https://github.com/Bertverbeek4PS/DataverseSyncUI/issues/20) | Code cleanup.
 [18](https://github.com/Bertverbeek4PS/DataverseSyncUI/issues/18) | Feature Telemetry added.
