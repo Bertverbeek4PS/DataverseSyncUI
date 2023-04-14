@@ -192,13 +192,6 @@ codeunit 70103 "Dataverse UI BC Proxy Gen."
                 JsonTkn.SelectToken('DisplayName.LocalizedLabels', JsonTknDisplayName);
                 TextBld.AppendLine('Caption = ''' + GetLocalizedLabelsValue(JsonTknDisplayName, '1033', 'Label') + ''';');
 
-                //Fields for option
-                if BCField = 'Option' then begin
-                    clear(JsonTknDataType);
-                    JsonTkn.SelectToken('[''@odata.type'']', JsonTknDataType);
-                    AddOptionProperties(TextBld, JsonTknLogicalName.AsValue().AsText(), DataverseUITable, DelChr(JsonTknDataType.AsValue().AsText(), '=', '#'));
-                end;
-
                 //Fields for Lookup
                 //TableRelation = "CRM Systemuser".SystemUserId;
                 if JsonTknAttributeTypeName.AsValue().AsText() = 'LookupType' then
@@ -299,58 +292,6 @@ codeunit 70103 "Dataverse UI BC Proxy Gen."
                 exit('GUID'); //FIXME is this always GUID??
         end;
 
-    end;
-
-    local procedure AddOptionProperties(TextBld: TextBuilder; LogicalName: Text; DataverseUITable: Record "Dataverse UI Table"; OdataType: Text)
-    var
-        RespMsgHttpResponseMessage: HttpResponseMessage;
-        ContentHttpContent: HttpContent;
-        JsonObj: JsonObject;
-        JsonTkn: JsonToken;
-        JsonTknValue: JsonToken;
-        JsonTknLocalizedLabels: JsonToken;
-        JsonArr: JsonArray;
-        i: Integer;
-        DataverseOptionField: Text;
-        OptionMembersTxt: Text;
-        OptionOrdinalValuesTxt: Text;
-    begin
-        // Format of the Boolean properties
-        // InitValue = " ";
-        // OptionMembers = " ",Active,Inactive,Terminated;
-        // OptionOrdinalValues = -1, 100000000, 100000001, 100000002;
-
-        RespMsgHttpResponseMessage := SendHttpRequest(DataverseUITable."Table Name Dataverse", LogicalName, OdataType);
-        ContentHttpContent := RespMsgHttpResponseMessage.Content();
-        ContentHttpContent.ReadAs(DataverseOptionField);
-        JsonObj.ReadFrom(DataverseOptionField);
-        if JsonObj.Get('OptionSet', JsonTkn) then begin
-            Clear(JsonObj);
-            JsonObj := JsonTkn.AsObject();
-            Clear(JsonTkn);
-            if JsonObj.Get('Options', JsonTkn) then begin
-                JsonArr := JsonTkn.AsArray();
-
-                OptionMembersTxt := '" "';
-                OptionOrdinalValuesTxt := '-1';
-                for i := 0 to (JsonArr.Count - 1) do begin
-                    Clear(JsonTkn);
-                    JsonArr.Get(i, JsonTkn);
-                    JsonTkn.SelectToken('Value', JsonTknValue);
-                    OptionOrdinalValuesTxt := OptionOrdinalValuesTxt + ', ' + JsonTknValue.AsValue().AsText();
-
-                    JsonTkn.SelectToken('Label.LocalizedLabels', JsonTknLocalizedLabels);
-                    if GetLocalizedLabelsValue(JsonTknLocalizedLabels, '1033', 'Label') = ' ' then
-                        OptionMembersTxt := OptionMembersTxt + ', ' + GetLocalizedLabelsValue(JsonTknLocalizedLabels, '1033', 'Label')
-                    else
-                        OptionMembersTxt := OptionMembersTxt + ', "' + GetLocalizedLabelsValue(JsonTknLocalizedLabels, '1033', 'Label') + '"';
-                end;
-
-                TextBld.AppendLine('InitValue = " ";');
-                TextBld.AppendLine('OptionMembers = ' + OptionMembersTxt + ';');
-                TextBld.AppendLine('OptionOrdinalValues = ' + OptionOrdinalValuesTxt + ';');
-            end;
-        end;
     end;
 
     local procedure GetLocalizedLabelsValue(JsonTkn: JsonToken; LanguageCode: Text; FieldTxt: Text): Text
