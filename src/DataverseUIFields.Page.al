@@ -47,6 +47,19 @@ page 70101 "Dataverse UI Fields"
                     begin
                         Fld.SetRange(TableNo, Rec."BC Table");
                         Fld.SetRange(ObsoleteState, Fld.ObsoleteState::No);
+                        Fld.SetFilter(Type, '%1|%2|%3|%4|%5|%6|%7|%8|%9|%10|%11|%12',
+                            Fld.Type::BigInteger,
+                            Fld.Type::Boolean,
+                            Fld.Type::Code,
+                            Fld.Type::Date,
+                            Fld.Type::DateFormula,
+                            Fld.Type::DateTime,
+                            Fld.Type::Decimal,
+                            Fld.Type::Duration,
+                            Fld.Type::GUID,
+                            Fld.Type::Integer,
+                            Fld.Type::Option,
+                            Fld.Type::Text);
                         if FieldSelection.Open(Fld) then
                             Rec.Validate("BC Field", Fld."No.");
                     end;

@@ -37,7 +37,8 @@ table 70101 "Dataverse UI Field"
         {
             Caption = 'BC Field';
             DataClassification = ToBeClassified;
-            TableRelation = Field."No." where(TableNo = field("BC Table"));
+            TableRelation = Field."No." where(TableNo = field("BC Table"),
+                                                type = filter(BigInteger | Boolean | Code | Date | DateFormula | DateFormula | Decimal | Duration | GUID | Integer | Option | Text));
 
             trigger OnValidate()
             var
