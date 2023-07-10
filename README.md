@@ -8,6 +8,7 @@ Please if you have any ideas contribute to it if you have any ideas.
 
 Pull Request | Changes
 --------------- | ---
+[37](https://github.com/Bertverbeek4PS/DataverseSyncUI/pull/37) | Added debug mode to enable better debugging with error messages.
 [36](https://github.com/Bertverbeek4PS/DataverseSyncUI/pull/36) | Prevent that time fields can exported. Dataverse cannot handle it.
 [34](https://github.com/Bertverbeek4PS/DataverseSyncUI/pull/34) | Fix for optionmembers None.
 [33](https://github.com/Bertverbeek4PS/DataverseSyncUI/pull/33) | Added feature to create procy table for Business Central.

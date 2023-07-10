@@ -31,6 +31,11 @@ table 70106 "Dataverse UI Setup"
         {
             Caption = 'Prefix Dataverse';
         }
+        field(70; "Debug mode"; Boolean)
+        {
+            Caption = 'Debug mode';
+            Editable = true;
+        }
     }
 
     keys
