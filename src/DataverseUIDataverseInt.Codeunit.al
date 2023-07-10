@@ -6,6 +6,7 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         DataverseUIField2: Record "Dataverse UI Field";
         DataverseUISetup: Record "Dataverse UI Setup";
         PMKey: Record Field;
+        ResponseMessageContent: HttpContent;
         FeatureTelemetry: Codeunit "Feature Telemetry";
         ErrorField: Boolean;
         PmKeyTrue: Boolean;
@@ -17,6 +18,7 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         TableupdatedLbl: Label 'Table %1 is updated in Dataverse. %2', comment = '%1 = BC table, %2 = Dataverse table';
         FailOnPKErr: Label 'No good Primary Key is selected. Please select also a field of type code or text.';
         Body: Text;
+        HttpErrorMessage: Text;
         EntityId: Text;
         DataverseNameLbl: Label '%1_%2', comment = '%1 = Prefix, %2 = Table name';
     begin
@@ -39,10 +41,20 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
                     if DataverseUIField."Dataverse Lookup Field" = 0 then begin
                         JsonBody := CreateFieldJson(DataverseUIField."BC Table", DataverseUIField."BC Field", DataverseUIField);
                         JsonBody.WriteTo(Body);
+
+                        if DataverseUISetup."Debug mode" then begin
+                            Message(Body);
+                        end;
+
                         ResponseMessage := SendHttpRequest(Body, EntityId, true, false);
                     end else begin
                         JsonBody := Lookupfield(DataverseUIField);
                         JsonBody.WriteTo(Body);
+
+                        if DataverseUISetup."Debug mode" then begin
+                            Message(Body);
+                        end;
+
                         ResponseMessage := SendHttpRequest(Body, EntityId, true, true);
                     end;
 
@@ -83,6 +95,10 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
             JsonBody := CreateTableJson(DataverseUITable, DataverseUIField);
             JsonBody.WriteTo(Body);
 
+            if DataverseUISetup."Debug mode" then begin
+                Message(Body);
+            end;
+
             ResponseMessage := SendHttpRequest(Body, '', false, false);
 
             if ResponseMessage.HttpStatusCode = 204 then begin
@@ -113,6 +129,11 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
                 Message(StrSubstNo(TablecreatedLbl, DataverseUITable."BC Table Caption"));
             end else begin
                 Message(ResponseMessage.ReasonPhrase);
+                if DataverseUISetup."Debug mode" then begin
+                    ResponseMessageContent := ResponseMessage.Content;
+                    ResponseMessageContent.ReadAs(HttpErrorMessage);
+                    Message(HttpErrorMessage);
+                end;
                 FeatureTelemetry.LogError('DVUI010', 'Dataverse UI', 'Create Dataverse Table', ResponseMessage.ReasonPhrase);
             end;
         end;
@@ -624,6 +645,7 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         JObjLabel: JsonObject;
         JObjOptionSet: JsonObject;
         OptionStringList: List of [Text];
+        OptionStringList2: List of [Text];
         OptionString: Text;
         FieldRefValueInt: Integer;
         FldRef: FieldRef;
@@ -635,7 +657,12 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
         FieldJson.Add('AttributeTypeName', JArrProperty);
         FieldJson.Add('DefaultFormValue', 0);
 
-        OptionStringList := Fld.OptionString.Split(',');
+        OptionStringList2 := Fld.OptionString.Split(',');
+        foreach OptionString in OptionStringList2 do begin
+            if not OptionStringList.Contains(OptionString) then
+                OptionStringList.Add(OptionString);
+        end;
+
         foreach OptionString in OptionStringList do begin
             Clear(JArrProperty);
             Clear(JAObjLocalizedLabels);
@@ -660,6 +687,7 @@ codeunit 70101 "Dataverse UI Dataverse Integr."
             JObjLabel.Add('Label', JArrProperty);
             JObjOption.Add(JObjLabel);
         end;
+
         JObjOptionSet.Add('IsGlobal', false);
         JObjOptionSet.Add('IsManaged', false);
         JObjOptionSet.Add('Options', JObjOption);

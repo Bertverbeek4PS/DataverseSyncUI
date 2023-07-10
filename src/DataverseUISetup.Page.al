@@ -45,6 +45,11 @@ page 70100 "Dataverse UI Setup"
                 {
                     ToolTip = 'Specifies the prefix in Dataverse for table and fields. Format xxx';
                 }
+                field(Debugmode; Rec."Debug mode")
+                {
+                    Caption = 'Debug mode';
+                    ToolTip = 'Turn this on if you want to enter debug mode.';
+                }
             }
             part(Tables; "Dataverse UI Tables")
             {
