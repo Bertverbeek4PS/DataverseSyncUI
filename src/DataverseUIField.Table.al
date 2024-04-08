@@ -269,7 +269,7 @@ table 70101 "Dataverse UI Field"
 
                 FieldRec.Reset();
                 FieldRec.SetRange(TableNo, DataverseTable);
-                FieldRec.SetFilter(FieldName, '%1', '*' + DataverseUIDataverseIntegr.GetDataverseCompliantName(FieldName.FieldName));
+                FieldRec.SetFilter(FieldName, '%1', '*' + DataverseUIDataverseIntegr.GetDataverseCompliantName(FieldName.FieldName) + '*');
                 if FieldRec.FindFirst() then
                     if TryCompareFieldType(FieldName, FieldRec) then begin
                         DataverseUIFieldsMap.Validate("Dataverse Field", FieldRec."No.");
